@@ -475,9 +475,9 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('regjistrim')">➕ Regjistro Ankesë</button>
-            <button class="tab" onclick="switchTab('lista')">📊 Lista e Ankesave</button>
-            <button class="tab" onclick="switchTab('raporte')">📈 Raporte & Statistika</button>
+            <button class="tab active" onclick="switchTab('regjistrim', event)">➕ Regjistro Ankesë</button>
+            <button class="tab" onclick="switchTab('lista', event)">📊 Lista e Ankesave</button>
+            <button class="tab" onclick="switchTab('raporte', event)">📈 Raporte & Statistika</button>
         </div>
 
         <!-- Tab 1: Regjistrim -->
@@ -1033,14 +1033,16 @@
         }
 
         // Switch tabs
-        function switchTab(tabName) {
+        function switchTab(tabName, evt) {
             const tabs = document.querySelectorAll('.tab');
             const contents = document.querySelectorAll('.tab-content');
             
             tabs.forEach(tab => tab.classList.remove('active'));
             contents.forEach(content => content.classList.remove('active'));
             
-            event.target.classList.add('active');
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
             document.getElementById(tabName).classList.add('active');
             
             if (tabName === 'lista') {
@@ -1074,7 +1076,8 @@
             document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
             document.getElementById('statusiPageses').value = ankesa.statusiPageses;
 
-            document.querySelector('.tab').click();
+            // Switch to regjistrim tab
+            switchTab('regjistrim');
         }
 
         // Delete ankesa
