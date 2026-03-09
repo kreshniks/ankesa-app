@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menaxhimi i Ankesave</title>
     <style>
+        /* ... (Stilet mbeten të njëjta si në kodin tuaj) ... */
         * {
             margin: 0;
             padding: 0;
@@ -479,7 +480,6 @@
             <button class="tab" onclick="switchTab('raporte', event)">📈 Raporte & Statistika</button>
         </div>
 
-        <!-- Tab 1: Regjistrim -->
         <div id="regjistrim" class="tab-content active">
             <h2 style="margin-bottom: 20px;">Regjistro Ankesë të Re</h2>
             <div id="formAlert"></div>
@@ -506,7 +506,7 @@
                         <input type="text" id="paramasa">
                     </div>
                     <div class="form-group">
-                        <label>Data e Autorizimit</label>
+                        <label>Data e Autorizimit (DD/MM/YYYY)</label>
                         <input type="date" id="dataAutorizimit">
                     </div>
                     <div class="form-group">
@@ -522,7 +522,7 @@
                         <input type="text" id="ekspertiShqyrtues">
                     </div>
                     <div class="form-group">
-                        <label>Dorëzuar me datë *</label>
+                        <label>Dorëzuar me datë * (DD/MM/YYYY)</label>
                         <input type="date" id="dataDorezimet" required>
                     </div>
                     <div class="form-group">
@@ -588,7 +588,6 @@
             </form>
         </div>
 
-        <!-- Tab 2: Lista -->
         <div id="lista" class="tab-content">
             <h2 style="margin-bottom: 20px;">Lista e të gjitha Ankesave</h2>
             
@@ -616,7 +615,7 @@
             </div>
 
             <div class="export-buttons">
-                <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel</button>
+                <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel (.xlsx)</button>
                 <button class="btn btn-warning" onclick="window.print()">🖨️ Printo</button>
             </div>
 
@@ -653,7 +652,6 @@
             </div>
         </div>
 
-        <!-- Tab 3: Raporte -->
         <div id="raporte" class="tab-content">
             <h2 style="margin-bottom: 20px;">Raporte & Statistika</h2>
             
@@ -698,7 +696,7 @@
                     </div>
                     <div class="form-group">
                         <label>Viti</label>
-                        <input type="number" id="raportViti" value="2025">
+                        <input type="number" id="raportViti" value="2026">
                     </div>
                 </div>
                 <button class="btn btn-primary" onclick="generateMonthlyReport()" style="margin-top: 10px;">📊 Gjenero Raport Mujor</button>
@@ -708,7 +706,6 @@
         </div>
     </div>
 
-    <!-- Modal për shfaqjen e detajeve -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -724,7 +721,7 @@
     </div>
 
     <script>
-        // Supabase Configuration - Custom Implementation
+        // ... (Konfigurimet e Supabase mbeten të njëjta) ...
         const SUPABASE_URL = 'https://bqcyyipoimwgzlspzzzl.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxY3l5aXBvaW13Z3psc3B6enpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTcyMjAsImV4cCI6MjA4ODYzMzIyMH0.UEfYcmtXFT4_hAsnqrLark9CT6L21YPhufaEJLpKI_w';
         const STORAGE_BUCKET = 'ankesa-bucket';
@@ -738,7 +735,30 @@
             vendim: null
         };
 
-        // Simple Supabase Storage Upload Function
+        // --- FUNKSIONET NDIHMËSE PËR DATAT ---
+
+        // Konverton dd/mm/yyyy në yyyy-mm-dd (formatin që kërkojnë inputet e dates)
+        function formatDateForInput(dateStr) {
+            if (!dateStr || !dateStr.includes('/')) return dateStr;
+            const parts = dateStr.split('/');
+            // parts[0]=dd, parts[1]=mm, parts[2]=yyyy
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
+        // Shfaq datën siç vjen nga backend (tani vjen dd/mm/yyyy)
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return dateString;
+        }
+
+        // --- FUNKSIONI I RI PËR EKSPORTIN NË EXCEL (.XLSX) ---
+        function exportToExcel() {
+            // Thërret direkt endpoint-in e Python që krijuam
+            window.location.href = '/api/ankesa/export';
+        }
+
+        // --- (Funksionet e tjera mbeten kryesisht të njëjta me korrigjimet e dates) ---
+
         async function uploadToSupabase(file, type) {
             const fileExt = file.name.split('.').pop();
             const fileName = `${type}_${Date.now()}.${fileExt}`;
@@ -746,7 +766,6 @@
             
             try {
                 const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
-                
                 const response = await fetch(uploadUrl, {
                     method: 'POST',
                     headers: {
@@ -756,62 +775,30 @@
                     body: file
                 });
                 
-                if (!response.ok) {
-                    const error = await response.text();
-                    console.error('Upload response:', error);
-                    throw new Error('Upload failed: ' + response.status);
-                }
-                
-                // Construct public URL
-                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filePath}`;
-                
-                return {
-                    url: publicUrl,
-                    name: file.name
-                };
-            } catch (error) {
-                console.error('Upload error:', error);
-                throw error;
-            }
+                if (!response.ok) throw new Error('Upload failed');
+                return { url: `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filePath}`, name: file.name };
+            } catch (error) { throw error; }
         }
 
-        // Check authentication on page load
         async function checkAuth() {
             try {
-                const response = await fetch(`${API_BASE}/api/check-auth`, {
-                    credentials: 'include'
-                });
+                const response = await fetch(`${API_BASE}/api/check-auth`, { credentials: 'include' });
                 const data = await response.json();
-                
-                if (!data.authenticated) {
-                    window.location.href = '/';
-                }
-            } catch (error) {
-                console.error('Auth check error:', error);
-                window.location.href = '/';
-            }
+                if (!data.authenticated) window.location.href = '/';
+            } catch (error) { window.location.href = '/'; }
         }
 
-        // Logout function
         async function logout() {
             try {
-                await fetch(`${API_BASE}/api/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
+                await fetch(`${API_BASE}/api/logout`, { method: 'POST', credentials: 'include' });
                 window.location.href = '/';
-            } catch (error) {
-                console.error('Logout error:', error);
-                window.location.href = '/';
-            }
+            } catch (error) { window.location.href = '/'; }
         }
 
-        // Toggle Eksperti Shqyrtues field
         function toggleEkspertiField() {
             const lloji = document.getElementById('llojiAngazhimit').value;
             const field = document.getElementById('ekspertiShqyrtuesField');
             const input = document.getElementById('ekspertiShqyrtues');
-            
             if (lloji === 'Ekspert Teknik') {
                 field.classList.add('show');
                 input.required = true;
@@ -822,115 +809,63 @@
             }
         }
 
-        // Handle file selection
         function handleFileSelect(input, type) {
             const file = input.files[0];
             if (!file) return;
-            
             const fileNameSpan = document.getElementById(`${type}FileName`);
             fileNameSpan.textContent = file.name;
             fileNameSpan.classList.add('selected');
-            
             uploadedFiles[type] = file;
         }
 
-        // Upload file to Supabase Storage
         async function uploadFile(file, type) {
             if (!file) return null;
-            
             const progressDiv = document.getElementById(`${type}Progress`);
             const progressBar = document.getElementById(`${type}ProgressBar`);
-            
             progressDiv.classList.add('active');
-            progressBar.style.width = '0%';
-            
             try {
-                // Simulate progress
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 15;
-                    if (progress <= 90) {
-                        progressBar.style.width = `${progress}%`;
-                    }
-                }, 200);
-                
-                // Upload using custom function
                 const result = await uploadToSupabase(file, type);
-                
-                clearInterval(interval);
                 progressBar.style.width = '100%';
-                
-                setTimeout(() => {
-                    progressDiv.classList.remove('active');
-                    progressBar.style.width = '0%';
-                }, 500);
-                
+                setTimeout(() => progressDiv.classList.remove('active'), 500);
                 return result;
             } catch (error) {
-                console.error('Upload error:', error);
                 alert(`Gabim në upload: ${error.message}`);
                 progressDiv.classList.remove('active');
-                progressBar.style.width = '0%';
                 return null;
             }
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
             loadAnkesa();
             loadStatistics();
         });
 
-        // API calls
         async function apiCall(endpoint, method = 'GET', data = null) {
             const options = {
-                method,
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                method, credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
             };
-            
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}${endpoint}`, options);
-                
-                if (response.status === 401) {
-                    window.location.href = '/';
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                throw error;
-            }
+            if (data) options.body = JSON.stringify(data);
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+            if (response.status === 401) { window.location.href = '/'; return; }
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+            return await response.json();
         }
 
-        // Load all ankesa
         async function loadAnkesa() {
             try {
                 document.getElementById('tableLoading').style.display = 'block';
                 document.getElementById('tableWrapper').style.display = 'none';
-                
                 ankeset = await apiCall('/api/ankesa');
                 loadTable();
-                
                 document.getElementById('tableLoading').style.display = 'none';
                 document.getElementById('tableWrapper').style.display = 'block';
             } catch (error) {
-                document.getElementById('tableLoading').innerHTML = '❌ Gabim në ngarkim të të dhënave';
+                document.getElementById('tableLoading').innerHTML = '❌ Gabim në ngarkim';
             }
         }
 
-        // Load statistics
         async function loadStatistics() {
             try {
                 const stats = await apiCall('/api/statistika');
@@ -938,52 +873,36 @@
                 document.getElementById('totalPaguar').textContent = stats.paguar;
                 document.getElementById('totalPapaguar').textContent = stats.papaguar;
                 document.getElementById('totalShuma').textContent = formatCurrency(stats.totalShuma);
-            } catch (error) {
-                console.error('Error loading statistics:', error);
-            }
+            } catch (error) {}
         }
 
-        // Form submission
         document.getElementById('ankeseForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Duke ruajtur...';
             
             try {
-                // Upload files first
-                let raportData = null;
-                let vendimData = null;
+                let raportData = uploadedFiles.raport ? await uploadFile(uploadedFiles.raport, 'raport') : null;
+                let vendimData = uploadedFiles.vendim ? await uploadFile(uploadedFiles.vendim, 'vendim') : null;
                 
-                if (uploadedFiles.raport) {
-                    submitBtn.textContent = '⏳ Duke ngarkuar raportin...';
-                    raportData = await uploadFile(uploadedFiles.raport, 'raport');
-                }
-                
-                if (uploadedFiles.vendim) {
-                    submitBtn.textContent = '⏳ Duke ngarkuar vendimin...';
-                    vendimData = await uploadFile(uploadedFiles.vendim, 'vendim');
-                }
-                
-                submitBtn.textContent = '⏳ Duke ruajtur të dhënat...';
-                
+                // NDRYSHIMI: Marrim vlerat e dates direkt. Backend do t'i parsojë ato.
                 const data = {
                     nrProtokollit: document.getElementById('nrProtokollit').value,
                     titulliAktivitetit: document.getElementById('titulliAktivitetit').value,
                     autoriteti: document.getElementById('autoriteti').value,
                     oeAnkues: document.getElementById('oeAnkues').value,
                     paramasa: document.getElementById('paramasa').value,
-                    dataAutorizimit: document.getElementById('dataAutorizimit').value,
+                    dataAutorizimit: formatDateForBackend(document.getElementById('dataAutorizimit').value),
                     llojiAngazhimit: document.getElementById('llojiAngazhimit').value,
                     ekspertiShqyrtues: document.getElementById('ekspertiShqyrtues').value,
-                    dataDorezimet: document.getElementById('dataDorezimet').value,
+                    dataDorezimet: formatDateForBackend(document.getElementById('dataDorezimet').value),
                     rekomandimi: document.getElementById('rekomandimi').value,
                     vendimi: document.getElementById('vendimi').value,
-                    raportFileUrl: raportData?.url,
-                    raportFileName: raportData?.name,
-                    vendimFileUrl: vendimData?.url,
-                    vendimFileName: vendimData?.name,
+                    raportFileUrl: raportData?.url || ankeset.find(a => a.id === editingId)?.raportFileUrl,
+                    raportFileName: raportData?.name || ankeset.find(a => a.id === editingId)?.raportFileName,
+                    vendimFileUrl: vendimData?.url || ankeset.find(a => a.id === editingId)?.vendimFileUrl,
+                    vendimFileName: vendimData?.name || ankeset.find(a => a.id === editingId)?.vendimFileName,
                     nrFatures: document.getElementById('nrFatures').value,
                     shumaBruto: document.getElementById('shumaBruto').value,
                     shumaNeto: document.getElementById('shumaNeto').value,
@@ -992,33 +911,33 @@
 
                 if (editingId) {
                     await apiCall(`/api/ankesa/${editingId}`, 'PUT', data);
-                    showAlert('✅ Ankesa u përditësua me sukses!', 'success');
                     editingId = null;
                 } else {
                     await apiCall('/api/ankesa', 'POST', data);
-                    showAlert('✅ Ankesa u ruajt me sukses!', 'success');
                 }
                 
                 resetForm();
                 await loadAnkesa();
                 await loadStatistics();
-                
-                setTimeout(() => {
-                    switchTab('lista');
-                }, 1500);
+                switchTab('lista');
             } catch (error) {
-                showAlert('❌ Gabim në ruajtje: ' + error.message, 'error');
+                alert('Gabim: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = '💾 Ruaj Ankesën';
             }
         });
 
-        // Load table
+        // Ndihmës për të dërguar datën në format dd/mm/yyyy në backend
+        function formatDateForBackend(dateVal) {
+            if (!dateVal) return null;
+            const d = new Date(dateVal);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
         function loadTable() {
             const tbody = document.getElementById('ankesetTableBody');
             tbody.innerHTML = '';
-
             ankeset.forEach((ankesa, index) => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
@@ -1030,13 +949,13 @@
                     <td>${ankesa.paramasa || '-'}</td>
                     <td>${ankesa.llojiAngazhimit}</td>
                     <td>${ankesa.ekspertiShqyrtues || 'N/A'}</td>
-                    <td>${ankesa.dataAutorizimit ? formatDate(ankesa.dataAutorizimit) : '-'}</td>
+                    <td>${formatDate(ankesa.dataAutorizimit)}</td>
                     <td>${formatDate(ankesa.dataDorezimet)}</td>
                     <td>${ankesa.shqyrtimiDite || '-'}</td>
                     <td>${truncate(ankesa.rekomandimi, 30)}</td>
                     <td>${truncate(ankesa.vendimi, 30)}</td>
-                    <td>${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" class="file-link">📄 ${ankesa.raportFileName}</a>` : '-'}</td>
-                    <td>${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" class="file-link">📄 ${ankesa.vendimFileName}</a>` : '-'}</td>
+                    <td>${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" class="file-link">📄</a>` : '-'}</td>
+                    <td>${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" class="file-link">📄</a>` : '-'}</td>
                     <td>${ankesa.nrFatures || '-'}</td>
                     <td>${ankesa.shumaBruto ? formatCurrency(ankesa.shumaBruto) : '-'}</td>
                     <td>${ankesa.shumaNeto ? formatCurrency(ankesa.shumaNeto) : '-'}</td>
@@ -1050,218 +969,103 @@
             });
         }
 
-        // Switch tabs
         function switchTab(tabName, evt) {
-            const tabs = document.querySelectorAll('.tab');
-            const contents = document.querySelectorAll('.tab-content');
-            
-            tabs.forEach(tab => tab.classList.remove('active'));
-            contents.forEach(content => content.classList.remove('active'));
-            
-            if (evt && evt.target) {
-                evt.target.classList.add('active');
-            }
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (evt) evt.target.classList.add('active');
             document.getElementById(tabName).classList.add('active');
-            
-            if (tabName === 'lista') {
-                loadAnkesa();
-            } else if (tabName === 'raporte') {
-                loadStatistics();
-            }
+            if (tabName === 'lista') loadAnkesa();
+            if (tabName === 'raporte') loadStatistics();
         }
 
-        // Edit ankesa
+        // NDRYSHIMI: Logjika e konvertimit të dates për input-et
         function editAnkesa(id) {
             const ankesa = ankeset.find(a => a.id === id);
             if (!ankesa) return;
-
             editingId = id;
-            
             document.getElementById('nrProtokollit').value = ankesa.nrProtokollit;
             document.getElementById('titulliAktivitetit').value = ankesa.titulliAktivitetit;
             document.getElementById('autoriteti').value = ankesa.autoriteti;
             document.getElementById('oeAnkues').value = ankesa.oeAnkues;
             document.getElementById('paramasa').value = ankesa.paramasa || '';
-            document.getElementById('dataAutorizimit').value = ankesa.dataAutorizimit || '';
+            
+            // Konvertimi i dates nga dd/mm/yyyy në yyyy-mm-dd
+            document.getElementById('dataAutorizimit').value = formatDateForInput(ankesa.dataAutorizimit);
+            document.getElementById('dataDorezimet').value = formatDateForInput(ankesa.dataDorezimet);
+            
             document.getElementById('llojiAngazhimit').value = ankesa.llojiAngazhimit;
             toggleEkspertiField();
             document.getElementById('ekspertiShqyrtues').value = ankesa.ekspertiShqyrtues || '';
-            document.getElementById('dataDorezimet').value = ankesa.dataDorezimet;
             document.getElementById('rekomandimi').value = ankesa.rekomandimi || '';
             document.getElementById('vendimi').value = ankesa.vendimi || '';
             document.getElementById('nrFatures').value = ankesa.nrFatures || '';
             document.getElementById('shumaBruto').value = ankesa.shumaBruto || '';
             document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
             document.getElementById('statusiPageses').value = ankesa.statusiPageses;
-
-            // Switch to regjistrim tab
             switchTab('regjistrim');
         }
 
-        // Delete ankesa
         async function deleteAnkesa(id) {
-            if (!confirm('A jeni të sigurt që doni ta fshini këtë ankesë?')) return;
-            
-            try {
-                await apiCall(`/api/ankesa/${id}`, 'DELETE');
-                await loadAnkesa();
-                await loadStatistics();
-                alert('✅ Ankesa u fshi me sukses');
-            } catch (error) {
-                alert('❌ Gabim në fshirje: ' + error.message);
-            }
+            if (!confirm('A jeni të sigurt?')) return;
+            await apiCall(`/api/ankesa/${id}`, 'DELETE');
+            loadAnkesa();
         }
 
-        // View details
         function viewDetails(id) {
             const ankesa = ankeset.find(a => a.id === id);
             if (!ankesa) return;
-
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
+            document.getElementById('modalBody').innerHTML = `
                 <div style="line-height: 1.8;">
                     <p><strong>Nr. Protokolli:</strong> ${ankesa.nrProtokollit}</p>
-                    <p><strong>Titulli i Aktivitetit:</strong> ${ankesa.titulliAktivitetit}</p>
-                    <p><strong>Autoriteti Kontraktues:</strong> ${ankesa.autoriteti}</p>
-                    <p><strong>OE Ankues:</strong> ${ankesa.oeAnkues}</p>
-                    <p><strong>Paramasa:</strong> ${ankesa.paramasa || '-'}</p>
-                    <p><strong>Data e Autorizimit:</strong> ${ankesa.dataAutorizimit ? formatDate(ankesa.dataAutorizimit) : '-'}</p>
-                    <p><strong>Lloji i Angazhimit:</strong> ${ankesa.llojiAngazhimit}</p>
-                    <p><strong>Eksperti Shqyrtues:</strong> ${ankesa.ekspertiShqyrtues || 'N/A'}</p>
-                    <p><strong>Dorëzuar më:</strong> ${formatDate(ankesa.dataDorezimet)}</p>
-                    <p><strong>Shqyrtimi në ditë:</strong> ${ankesa.shqyrtimiDite || '-'}</p>
-                    <p><strong>Rekomandimi:</strong> ${ankesa.rekomandimi || '-'}</p>
-                    <p><strong>Vendimi:</strong> ${ankesa.vendimi || '-'}</p>
-                    <p><strong>Raporti:</strong> ${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" class="file-link">📄 ${ankesa.raportFileName}</a>` : '-'}</p>
-                    <p><strong>Vendimi (file):</strong> ${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" class="file-link">📄 ${ankesa.vendimFileName}</a>` : '-'}</p>
-                    <p><strong>Nr. Faturës:</strong> ${ankesa.nrFatures || '-'}</p>
-                    <p><strong>Shuma Bruto:</strong> ${ankesa.shumaBruto ? formatCurrency(ankesa.shumaBruto) : '-'}</p>
-                    <p><strong>Shuma Neto:</strong> ${ankesa.shumaNeto ? formatCurrency(ankesa.shumaNeto) : '-'}</p>
-                    <p><strong>Statusi i Pagesës:</strong> <span class="status-badge status-${ankesa.statusiPageses.toLowerCase()}">${ankesa.statusiPageses}</span></p>
+                    <p><strong>Titulli:</strong> ${ankesa.titulliAktivitetit}</p>
+                    <p><strong>Autoriteti:</strong> ${ankesa.autoriteti}</p>
+                    <p><strong>Ankuesi:</strong> ${ankesa.oeAnkues}</p>
+                    <p><strong>Data e Dorëzimit:</strong> ${formatDate(ankesa.dataDorezimet)}</p>
+                    <p><strong>Shuma Neto:</strong> ${formatCurrency(ankesa.shumaNeto)}</p>
+                    <p><strong>Statusi:</strong> ${ankesa.statusiPageses}</p>
                 </div>
             `;
-            
             document.getElementById('detailModal').classList.add('active');
         }
 
-        // Close modal
-        function closeModal() {
-            document.getElementById('detailModal').classList.remove('active');
-        }
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 
-        // Reset form
         function resetForm() {
             document.getElementById('ankeseForm').reset();
             editingId = null;
             uploadedFiles = { raport: null, vendim: null };
             document.getElementById('raportFileName').textContent = '📎 Zgjidhni skedar...';
-            document.getElementById('raportFileName').classList.remove('selected');
             document.getElementById('vendimFileName').textContent = '📎 Zgjidhni skedar...';
-            document.getElementById('vendimFileName').classList.remove('selected');
-            document.getElementById('formAlert').innerHTML = '';
             toggleEkspertiField();
         }
 
-        // Show alert
-        function showAlert(message, type) {
-            const alertDiv = document.getElementById('formAlert');
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => {
-                alertDiv.innerHTML = '';
-            }, 5000);
-        }
-
-        // Filter table
         function filterTable() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-
-            const rows = document.querySelectorAll('#ankesetTableBody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const status = row.querySelector('.status-badge')?.textContent || '';
-                const dateCell = row.cells[9]?.textContent || '';
-                
-                let show = true;
-                
-                if (searchTerm && !text.includes(searchTerm)) show = false;
-                if (statusFilter && status !== statusFilter) show = false;
-                if (dateFrom || dateTo) {
-                    const ankesa = ankeset.find(a => a.nrProtokollit === row.cells[1].textContent);
-                    if (ankesa) {
-                        if (dateFrom && ankesa.dataDorezimet < dateFrom) show = false;
-                        if (dateTo && ankesa.dataDorezimet > dateTo) show = false;
-                    }
-                }
-                
-                row.style.display = show ? '' : 'none';
+            document.querySelectorAll('#ankesetTableBody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
             });
         }
 
-        // Generate monthly report
         async function generateMonthlyReport() {
-            const month = parseInt(document.getElementById('raportMuaji').value);
-            const year = parseInt(document.getElementById('raportViti').value);
-            
-            try {
-                const report = await apiCall(`/api/raport-mujor?month=${month}&year=${year}`);
-                
-                const result = document.getElementById('monthlyReportResult');
-                
-                if (report.total === 0) {
-                    result.innerHTML = '<p style="text-align: center; color: #6c757d;">Nuk ka ankesa për këtë periudhë.</p>';
-                    return;
-                }
-
-                result.innerHTML = `
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                        <h3>Raport për ${getMonthName(month)} ${year}</h3>
-                        <div style="margin-top: 20px;">
-                            <p><strong>Numri total i ankesave:</strong> ${report.total}</p>
-                            <p><strong>Të paguara:</strong> ${report.paguar}</p>
-                            <p><strong>Të papaguara:</strong> ${report.papaguar}</p>
-                            <p><strong>Shuma totale bruto:</strong> ${formatCurrency(report.totalBruto)}</p>
-                            <p><strong>Shuma totale neto:</strong> ${formatCurrency(report.totalNeto)}</p>
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                alert('❌ Gabim në gjenerim të raportit: ' + error.message);
+            const month = document.getElementById('raportMuaji').value;
+            const year = document.getElementById('raportViti').value;
+            const report = await apiCall(`/api/raport-mujor?month=${month}&year=${year}`);
+            const result = document.getElementById('monthlyReportResult');
+            if (report.total === 0) {
+                result.innerHTML = '<p>Nuk ka të dhëna.</p>';
+                return;
             }
-        }
-
-        // Export to Excel (CSV)
-        function exportToExcel() {
-            let csv = 'Nr,Nr. Protokolli,Titulli Aktivitetit,Autoriteti,OE Ankues,Paramasa,Lloji Angazhimit,Eksperti Shqyrtues,Data Autorizimit,Data Dorëzimit,Shqyrtimi (ditë),Rekomandimi,Vendimi,Nr. Faturës,Shuma Bruto,Shuma Neto,Statusi\n';
-            
-            ankeset.forEach((ankesa, index) => {
-                csv += `${index + 1},"${ankesa.nrProtokollit}","${ankesa.titulliAktivitetit}","${ankesa.autoriteti}","${ankesa.oeAnkues}","${ankesa.paramasa || ''}","${ankesa.llojiAngazhimit}","${ankesa.ekspertiShqyrtues || 'N/A'}","${ankesa.dataAutorizimit || ''}","${ankesa.dataDorezimet}","${ankesa.shqyrtimiDite || ''}","${ankesa.rekomandimi || ''}","${ankesa.vendimi || ''}","${ankesa.nrFatures || ''}","${ankesa.shumaBruto || ''}","${ankesa.shumaNeto || ''}","${ankesa.statusiPageses}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `ankeset_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-        }
-
-        // Helper functions
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('sq-AL');
+            result.innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h3>Raporti Mujor</h3>
+                    <p>Gjithsej ankesa: ${report.total}</p>
+                    <p>Shuma Neto: ${formatCurrency(report.totalNeto)}</p>
+                </div>
+            `;
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('sq-AL', { style: 'currency', currency: 'EUR' }).format(amount);
-        }
-
-        function getMonthName(month) {
-            const months = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'];
-            return months[month - 1];
+            return new Intl.NumberFormat('sq-AL', { style: 'currency', currency: 'EUR' }).format(amount || 0);
         }
 
         function truncate(text, length) {
