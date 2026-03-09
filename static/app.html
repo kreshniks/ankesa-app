@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menaxhimi i Ankesave</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content {
+            text-align: center;
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #495057;
+            border: none;
+            background: none;
+            font-size: 16px;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        input, textarea, select {
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .file-input-label:hover {
+            border-color: #667eea;
+            background: #e7f1ff;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .file-name.selected {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .upload-progress {
+            margin-top: 5px;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 13px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .filters {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .search-box {
+            grid-column: 1 / -1;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-paguar {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-papaguar {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pjesërisht {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            font-size: 28px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+
+        .conditional-field {
+            display: none;
+        }
+
+        .conditional-field.show {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="width: 120px;"></div>
+            <div class="header-content">
+                <h1>📋 Menaxhimi i Ankesave</h1>
+                <p>Sistem profesional për regjistrim dhe raportim të ankesave</p>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 Dil</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('regjistrim')">➕ Regjistro Ankesë</button>
+            <button class="tab" onclick="switchTab('lista')">📊 Lista e Ankesave</button>
+            <button class="tab" onclick="switchTab('raporte')">📈 Raporte & Statistika</button>
+        </div>
+
+        <!-- Tab 1: Regjistrim -->
+        <div id="regjistrim" class="tab-content active">
+            <h2 style="margin-bottom: 20px;">Regjistro Ankesë të Re</h2>
+            <div id="formAlert"></div>
+            <form id="ankeseForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nr. i Protokollit *</label>
+                        <input type="text" id="nrProtokollit" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Titulli i Aktivitetit *</label>
+                        <textarea id="titulliAktivitetit" required style="min-height: 80px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Autoriteti Kontraktues *</label>
+                        <input type="text" id="autoriteti" required>
+                    </div>
+                    <div class="form-group">
+                        <label>OE Ankues *</label>
+                        <input type="text" id="oeAnkues" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Paramasa</label>
+                        <input type="text" id="paramasa">
+                    </div>
+                    <div class="form-group">
+                        <label>Data e Autorizimit</label>
+                        <input type="date" id="dataAutorizimit">
+                    </div>
+                    <div class="form-group">
+                        <label>Lloji i Angazhimit *</label>
+                        <select id="llojiAngazhimit" required onchange="toggleEkspertiField()">
+                            <option value="">-- Zgjidhni --</option>
+                            <option value="Ekspert Shqyrtues">Ekspert Shqyrtues</option>
+                            <option value="Ekspert Teknik">Ekspert Teknik</option>
+                        </select>
+                    </div>
+                    <div class="form-group conditional-field" id="ekspertiShqyrtuesField">
+                        <label>Eksperti Shqyrtues *</label>
+                        <input type="text" id="ekspertiShqyrtues">
+                    </div>
+                    <div class="form-group">
+                        <label>Dorëzuar me datë *</label>
+                        <input type="date" id="dataDorezimet" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Rekomandimi</label>
+                        <textarea id="rekomandimi"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Vendimi</label>
+                        <textarea id="vendimi"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Bashkëngjit Raportin</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="raportFile" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this, 'raport')">
+                            <label for="raportFile" class="file-input-label">
+                                <span class="file-name" id="raportFileName">📎 Zgjidhni skedar...</span>
+                                <span>📁</span>
+                            </label>
+                        </div>
+                        <div class="upload-progress" id="raportProgress">
+                            <div class="upload-progress-bar" id="raportProgressBar"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bashkëngjit Vendimin</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="vendimFile" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this, 'vendim')">
+                            <label for="vendimFile" class="file-input-label">
+                                <span class="file-name" id="vendimFileName">📎 Zgjidhni skedar...</span>
+                                <span>📁</span>
+                            </label>
+                        </div>
+                        <div class="upload-progress" id="vendimProgress">
+                            <div class="upload-progress-bar" id="vendimProgressBar"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nr. i Faturës</label>
+                        <input type="text" id="nrFatures">
+                    </div>
+                    <div class="form-group">
+                        <label>Shuma Bruto (€)</label>
+                        <input type="number" step="0.01" id="shumaBruto">
+                    </div>
+                    <div class="form-group">
+                        <label>Shuma Neto (€)</label>
+                        <input type="number" step="0.01" id="shumaNeto">
+                    </div>
+                    <div class="form-group">
+                        <label>Statusi i Pagesës *</label>
+                        <select id="statusiPageses" required>
+                            <option value="">-- Zgjidhni --</option>
+                            <option value="Paguar">Paguar</option>
+                            <option value="Papaguar">Papaguar</option>
+                            <option value="Pjesërisht">Pjesërisht</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">💾 Ruaj Ankesën</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">🔄 Pastro</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tab 2: Lista -->
+        <div id="lista" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Lista e të gjitha Ankesave</h2>
+            
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Kërko në të gjitha fushat..." onkeyup="filterTable()">
+                </div>
+                <div class="form-group">
+                    <label>Filtro sipas Statusit</label>
+                    <select id="filterStatus" onchange="filterTable()">
+                        <option value="">Të gjitha</option>
+                        <option value="Paguar">Paguar</option>
+                        <option value="Papaguar">Papaguar</option>
+                        <option value="Pjesërisht">Pjesërisht</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nga data</label>
+                    <input type="date" id="filterDateFrom" onchange="filterTable()">
+                </div>
+                <div class="form-group">
+                    <label>Deri në datë</label>
+                    <input type="date" id="filterDateTo" onchange="filterTable()">
+                </div>
+            </div>
+
+            <div class="export-buttons">
+                <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel</button>
+                <button class="btn btn-warning" onclick="window.print()">🖨️ Printo</button>
+            </div>
+
+            <div id="tableLoading" class="loading">Duke ngarkuar të dhënat...</div>
+            <div class="table-container" id="tableWrapper" style="display: none;">
+                <table id="ankesetTable">
+                    <thead>
+                        <tr>
+                            <th>Nr</th>
+                            <th>Nr. Protokolli</th>
+                            <th>Titulli Aktivitetit</th>
+                            <th>Autoriteti</th>
+                            <th>OE Ankues</th>
+                            <th>Paramasa</th>
+                            <th>Lloji Angazhimit</th>
+                            <th>Eksperti Shqyrtues</th>
+                            <th>Data Autorizimit</th>
+                            <th>Data Dorëzimit</th>
+                            <th>Shqyrtimi (ditë)</th>
+                            <th>Rekomandimi</th>
+                            <th>Vendimi</th>
+                            <th>Raporti</th>
+                            <th>Vendimi (file)</th>
+                            <th>Nr. Faturës</th>
+                            <th>Shuma Bruto</th>
+                            <th>Shuma Neto</th>
+                            <th>Statusi</th>
+                            <th>Veprime</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ankesetTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 3: Raporte -->
+        <div id="raporte" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Raporte & Statistika</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalAnkesa">-</h3>
+                    <p>Ankesa Totale</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalPaguar">-</h3>
+                    <p>Të Paguara</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalPapaguar">-</h3>
+                    <p>Të Papaguara</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalShuma">-</h3>
+                    <p>Shuma Totale Neto</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3>Raport Mujor</h3>
+                <div class="form-grid" style="max-width: 600px;">
+                    <div class="form-group">
+                        <label>Muaji</label>
+                        <select id="raportMuaji">
+                            <option value="1">Janar</option>
+                            <option value="2">Shkurt</option>
+                            <option value="3">Mars</option>
+                            <option value="4">Prill</option>
+                            <option value="5">Maj</option>
+                            <option value="6">Qershor</option>
+                            <option value="7">Korrik</option>
+                            <option value="8">Gusht</option>
+                            <option value="9">Shtator</option>
+                            <option value="10">Tetor</option>
+                            <option value="11">Nëntor</option>
+                            <option value="12">Dhjetor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Viti</label>
+                        <input type="number" id="raportViti" value="2025">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="generateMonthlyReport()" style="margin-top: 10px;">📊 Gjenero Raport Mujor</button>
+            </div>
+
+            <div id="monthlyReportResult" style="margin-top: 30px;"></div>
+        </div>
+    </div>
+
+    <!-- Modal për shfaqjen e detajeve -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detajet e Ankesës</h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-warning" onclick="window.print()">🖨️ Printo</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Mbyll</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://bqcyyipoimwgzlspzzzl.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_AqOkflDRgGqvZHovR6s9jg_LrSt_Q9c';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const API_BASE = window.location.origin;
+        
+        let ankeset = [];
+        let editingId = null;
+        let uploadedFiles = {
+            raport: null,
+            vendim: null
+        };
+
+        // Check authentication on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/check-auth`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch(`${API_BASE}/api/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Toggle Eksperti Shqyrtues field
+        function toggleEkspertiField() {
+            const lloji = document.getElementById('llojiAngazhimit').value;
+            const field = document.getElementById('ekspertiShqyrtuesField');
+            const input = document.getElementById('ekspertiShqyrtues');
+            
+            if (lloji === 'Ekspert Teknik') {
+                field.classList.add('show');
+                input.required = true;
+            } else {
+                field.classList.remove('show');
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const fileNameSpan = document.getElementById(`${type}FileName`);
+            fileNameSpan.textContent = file.name;
+            fileNameSpan.classList.add('selected');
+            
+            uploadedFiles[type] = file;
+        }
+
+        // Upload file to Supabase Storage
+        async function uploadFile(file, type) {
+            if (!file) return null;
+            
+            const progressDiv = document.getElementById(`${type}Progress`);
+            const progressBar = document.getElementById(`${type}ProgressBar`);
+            
+            progressDiv.classList.add('active');
+            progressBar.style.width = '0%';
+            
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${type}_${Date.now()}.${fileExt}`;
+                const filePath = `ankesa-files/${fileName}`;
+                
+                // Simulate progress (Supabase doesn't provide upload progress)
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    if (progress <= 90) {
+                        progressBar.style.width = `${progress}%`;
+                    }
+                }, 100);
+                
+                const { data, error } = await supabase.storage
+                    .from('ankesa-bucket')
+                    .upload(filePath, file);
+                
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                
+                if (error) {
+                    console.error('Upload error:', error);
+                    alert(`Gabim në upload të file: ${error.message}`);
+                    progressDiv.classList.remove('active');
+                    return null;
+                }
+                
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('ankesa-bucket')
+                    .getPublicUrl(filePath);
+                
+                setTimeout(() => {
+                    progressDiv.classList.remove('active');
+                    progressBar.style.width = '0%';
+                }, 500);
+                
+                return {
+                    url: urlData.publicUrl,
+                    name: file.name
+                };
+            } catch (error) {
+                console.error('Upload error:', error);
+                progressDiv.classList.remove('active');
+                return null;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadAnkesa();
+            loadStatistics();
+        });
+
+        // API calls
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                
+                if (response.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Load all ankesa
+        async function loadAnkesa() {
+            try {
+                document.getElementById('tableLoading').style.display = 'block';
+                document.getElementById('tableWrapper').style.display = 'none';
+                
+                ankeset = await apiCall('/api/ankesa');
+                loadTable();
+                
+                document.getElementById('tableLoading').style.display = 'none';
+                document.getElementById('tableWrapper').style.display = 'block';
+            } catch (error) {
+                document.getElementById('tableLoading').innerHTML = '❌ Gabim në ngarkim të të dhënave';
+            }
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const stats = await apiCall('/api/statistika');
+                document.getElementById('totalAnkesa').textContent = stats.total;
+                document.getElementById('totalPaguar').textContent = stats.paguar;
+                document.getElementById('totalPapaguar').textContent = stats.papaguar;
+                document.getElementById('totalShuma').textContent = formatCurrency(stats.totalShuma);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Form submission
+        document.getElementById('ankeseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Duke ruajtur...';
+            
+            try {
+                // Upload files first
+                let raportData = null;
+                let vendimData = null;
+                
+                if (uploadedFiles.raport) {
+                    submitBtn.textContent = '⏳ Duke ngarkuar raportin...';
+                    raportData = await uploadFile(uploadedFiles.raport, 'raport');
+                }
+                
+                if (uploadedFiles.vendim) {
+                    submitBtn.textContent = '⏳ Duke ngarkuar vendimin...';
+                    vendimData = await uploadFile(uploadedFiles.vendim, 'vendim');
+                }
+                
+                submitBtn.textContent = '⏳ Duke ruajtur të dhënat...';
+                
+                const data = {
+                    nrProtokollit: document.getElementById('nrProtokollit').value,
+                    titulliAktivitetit: document.getElementById('titulliAktivitetit').value,
+                    autoriteti: document.getElementById('autoriteti').value,
+                    oeAnkues: document.getElementById('oeAnkues').value,
+                    paramasa: document.getElementById('paramasa').value,
+                    dataAutorizimit: document.getElementById('dataAutorizimit').value,
+                    llojiAngazhimit: document.getElementById('llojiAngazhimit').value,
+                    ekspertiShqyrtues: document.getElementById('ekspertiShqyrtues').value,
+                    dataDorezimet: document.getElementById('dataDorezimet').value,
+                    rekomandimi: document.getElementById('rekomandimi').value,
+                    vendimi: document.getElementById('vendimi').value,
+                    raportFileUrl: raportData?.url,
+                    raportFileName: raportData?.name,
+                    vendimFileUrl: vendimData?.url,
+                    vendimFileName: vendimData?.name,
+                    nrFatures: document.getElementById('nrFatures').value,
+                    shumaBruto: document.getElementById('shumaBruto').value,
+                    shumaNeto: document.getElementById('shumaNeto').value,
+                    statusiPageses: document.getElementById('statusiPageses').value
+                };
+
+                if (editingId) {
+                    await apiCall(`/api/ankesa/${editingId}`, 'PUT', data);
+                    showAlert('✅ Ankesa u përditësua me sukses!', 'success');
+                    editingId = null;
+                } else {
+                    await apiCall('/api/ankesa', 'POST', data);
+                    showAlert('✅ Ankesa u ruajt me sukses!', 'success');
+                }
+                
+                resetForm();
+                await loadAnkesa();
+                await loadStatistics();
+                
+                setTimeout(() => {
+                    switchTab('lista');
+                }, 1500);
+            } catch (error) {
+                showAlert('❌ Gabim në ruajtje: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Ruaj Ankesën';
+            }
+        });
+
+        // Load table
+        function loadTable() {
+            const tbody = document.getElementById('ankesetTableBody');
+            tbody.innerHTML = '';
+
+            ankeset.forEach((ankesa, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${ankesa.nrProtokollit}</td>
+                    <td>${ankesa.titulliAktivitetit}</td>
+                    <td>${ankesa.autoriteti}</td>
+                    <td>${ankesa.oeAnkues}</td>
+                    <td>${ankesa.paramasa || '-'}</td>
+                    <td>${ankesa.llojiAngazhimit}</td>
+                    <td>${ankesa.ekspertiShqyrtues || 'N/A'}</td>
+                    <td>${ankesa.dataAutorizimit ? formatDate(ankesa.dataAutorizimit) : '-'}</td>
+                    <td>${formatDate(ankesa.dataDorezimet)}</td>
+                    <td>${ankesa.shqyrtimiDite || '-'}</td>
+                    <td>${truncate(ankesa.rekomandimi, 30)}</td>
+                    <td>${truncate(ankesa.vendimi, 30)}</td>
+                    <td>${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" class="file-link">📄 ${ankesa.raportFileName}</a>` : '-'}</td>
+                    <td>${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" class="file-link">📄 ${ankesa.vendimFileName}</a>` : '-'}</td>
+                    <td>${ankesa.nrFatures || '-'}</td>
+                    <td>${ankesa.shumaBruto ? formatCurrency(ankesa.shumaBruto) : '-'}</td>
+                    <td>${ankesa.shumaNeto ? formatCurrency(ankesa.shumaNeto) : '-'}</td>
+                    <td><span class="status-badge status-${ankesa.statusiPageses.toLowerCase()}">${ankesa.statusiPageses}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-primary btn-small" onclick="viewDetails(${ankesa.id})">👁️</button>
+                        <button class="btn btn-warning btn-small" onclick="editAnkesa(${ankesa.id})">✏️</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${ankesa.id})">🗑️</button>
+                    </td>
+                `;
+            });
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'lista') {
+                loadAnkesa();
+            } else if (tabName === 'raporte') {
+                loadStatistics();
+            }
+        }
+
+        // Edit ankesa
+        function editAnkesa(id) {
+            const ankesa = ankeset.find(a => a.id === id);
+            if (!ankesa) return;
+
+            editingId = id;
+            
+            document.getElementById('nrProtokollit').value = ankesa.nrProtokollit;
+            document.getElementById('titulliAktivitetit').value = ankesa.titulliAktivitetit;
+            document.getElementById('autoriteti').value = ankesa.autoriteti;
+            document.getElementById('oeAnkues').value = ankesa.oeAnkues;
+            document.getElementById('paramasa').value = ankesa.paramasa || '';
+            document.getElementById('dataAutorizimit').value = ankesa.dataAutorizimit || '';
+            document.getElementById('llojiAngazhimit').value = ankesa.llojiAngazhimit;
+            toggleEkspertiField();
+            document.getElementById('ekspertiShqyrtues').value = ankesa.ekspertiShqyrtues || '';
+            document.getElementById('dataDorezimet').value = ankesa.dataDorezimet;
+            document.getElementById('rekomandimi').value = ankesa.rekomandimi || '';
+            document.getElementById('vendimi').value = ankesa.vendimi || '';
+            document.getElementById('nrFatures').value = ankesa.nrFatures || '';
+            document.getElementById('shumaBruto').value = ankesa.shumaBruto || '';
+            document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
+            document.getElementById('statusiPageses').value = ankesa.statusiPageses;
+
+            document.querySelector('.tab').click();
+        }
+
+        // Delete ankesa
+        async function deleteAnkesa(id) {
+            if (!confirm('A jeni të sigurt që doni ta fshini këtë ankesë?')) return;
+            
+            try {
+                await apiCall(`/api/ankesa/${id}`, 'DELETE');
+                await loadAnkesa();
+                await loadStatistics();
+                alert('✅ Ankesa u fshi me sukses');
+            } catch (error) {
+                alert('❌ Gabim në fshirje: ' + error.message);
+            }
+        }
+
+        // View details
+        function viewDetails(id) {
+            const ankesa = ankeset.find(a => a.id === id);
+            if (!ankesa) return;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div style="line-height: 1.8;">
+                    <p><strong>Nr. Protokolli:</strong> ${ankesa.nrProtokollit}</p>
+                    <p><strong>Titulli i Aktivitetit:</strong> ${ankesa.titulliAktivitetit}</p>
+                    <p><strong>Autoriteti Kontraktues:</strong> ${ankesa.autoriteti}</p>
+                    <p><strong>OE Ankues:</strong> ${ankesa.oeAnkues}</p>
+                    <p><strong>Paramasa:</strong> ${ankesa.paramasa || '-'}</p>
+                    <p><strong>Data e Autorizimit:</strong> ${ankesa.dataAutorizimit ? formatDate(ankesa.dataAutorizimit) : '-'}</p>
+                    <p><strong>Lloji i Angazhimit:</strong> ${ankesa.llojiAngazhimit}</p>
+                    <p><strong>Eksperti Shqyrtues:</strong> ${ankesa.ekspertiShqyrtues || 'N/A'}</p>
+                    <p><strong>Dorëzuar më:</strong> ${formatDate(ankesa.dataDorezimet)}</p>
+                    <p><strong>Shqyrtimi në ditë:</strong> ${ankesa.shqyrtimiDite || '-'}</p>
+                    <p><strong>Rekomandimi:</strong> ${ankesa.rekomandimi || '-'}</p>
+                    <p><strong>Vendimi:</strong> ${ankesa.vendimi || '-'}</p>
+                    <p><strong>Raporti:</strong> ${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" class="file-link">📄 ${ankesa.raportFileName}</a>` : '-'}</p>
+                    <p><strong>Vendimi (file):</strong> ${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" class="file-link">📄 ${ankesa.vendimFileName}</a>` : '-'}</p>
+                    <p><strong>Nr. Faturës:</strong> ${ankesa.nrFatures || '-'}</p>
+                    <p><strong>Shuma Bruto:</strong> ${ankesa.shumaBruto ? formatCurrency(ankesa.shumaBruto) : '-'}</p>
+                    <p><strong>Shuma Neto:</strong> ${ankesa.shumaNeto ? formatCurrency(ankesa.shumaNeto) : '-'}</p>
+                    <p><strong>Statusi i Pagesës:</strong> <span class="status-badge status-${ankesa.statusiPageses.toLowerCase()}">${ankesa.statusiPageses}</span></p>
+                </div>
+            `;
+            
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('ankeseForm').reset();
+            editingId = null;
+            uploadedFiles = { raport: null, vendim: null };
+            document.getElementById('raportFileName').textContent = '📎 Zgjidhni skedar...';
+            document.getElementById('raportFileName').classList.remove('selected');
+            document.getElementById('vendimFileName').textContent = '📎 Zgjidhni skedar...';
+            document.getElementById('vendimFileName').classList.remove('selected');
+            document.getElementById('formAlert').innerHTML = '';
+            toggleEkspertiField();
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('formAlert');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Filter table
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+
+            const rows = document.querySelectorAll('#ankesetTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const status = row.querySelector('.status-badge')?.textContent || '';
+                const dateCell = row.cells[9]?.textContent || '';
+                
+                let show = true;
+                
+                if (searchTerm && !text.includes(searchTerm)) show = false;
+                if (statusFilter && status !== statusFilter) show = false;
+                if (dateFrom || dateTo) {
+                    const ankesa = ankeset.find(a => a.nrProtokollit === row.cells[1].textContent);
+                    if (ankesa) {
+                        if (dateFrom && ankesa.dataDorezimet < dateFrom) show = false;
+                        if (dateTo && ankesa.dataDorezimet > dateTo) show = false;
+                    }
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        // Generate monthly report
+        async function generateMonthlyReport() {
+            const month = parseInt(document.getElementById('raportMuaji').value);
+            const year = parseInt(document.getElementById('raportViti').value);
+            
+            try {
+                const report = await apiCall(`/api/raport-mujor?month=${month}&year=${year}`);
+                
+                const result = document.getElementById('monthlyReportResult');
+                
+                if (report.total === 0) {
+                    result.innerHTML = '<p style="text-align: center; color: #6c757d;">Nuk ka ankesa për këtë periudhë.</p>';
+                    return;
+                }
+
+                result.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3>Raport për ${getMonthName(month)} ${year}</h3>
+                        <div style="margin-top: 20px;">
+                            <p><strong>Numri total i ankesave:</strong> ${report.total}</p>
+                            <p><strong>Të paguara:</strong> ${report.paguar}</p>
+                            <p><strong>Të papaguara:</strong> ${report.papaguar}</p>
+                            <p><strong>Shuma totale bruto:</strong> ${formatCurrency(report.totalBruto)}</p>
+                            <p><strong>Shuma totale neto:</strong> ${formatCurrency(report.totalNeto)}</p>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                alert('❌ Gabim në gjenerim të raportit: ' + error.message);
+            }
+        }
+
+        // Export to Excel (CSV)
+        function exportToExcel() {
+            let csv = 'Nr,Nr. Protokolli,Titulli Aktivitetit,Autoriteti,OE Ankues,Paramasa,Lloji Angazhimit,Eksperti Shqyrtues,Data Autorizimit,Data Dorëzimit,Shqyrtimi (ditë),Rekomandimi,Vendimi,Nr. Faturës,Shuma Bruto,Shuma Neto,Statusi\n';
+            
+            ankeset.forEach((ankesa, index) => {
+                csv += `${index + 1},"${ankesa.nrProtokollit}","${ankesa.titulliAktivitetit}","${ankesa.autoriteti}","${ankesa.oeAnkues}","${ankesa.paramasa || ''}","${ankesa.llojiAngazhimit}","${ankesa.ekspertiShqyrtues || 'N/A'}","${ankesa.dataAutorizimit || ''}","${ankesa.dataDorezimet}","${ankesa.shqyrtimiDite || ''}","${ankesa.rekomandimi || ''}","${ankesa.vendimi || ''}","${ankesa.nrFatures || ''}","${ankesa.shumaBruto || ''}","${ankesa.shumaNeto || ''}","${ankesa.statusiPageses}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ankeset_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Helper functions
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('sq-AL');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('sq-AL', { style: 'currency', currency: 'EUR' }).format(amount);
+        }
+
+        function getMonthName(month) {
+            const months = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'];
+            return months[month - 1];
+        }
+
+        function truncate(text, length) {
+            if (!text) return '-';
+            return text.length > length ? text.substring(0, length) + '...' : text;
+        }
+    </script>
+</body>
+</html>
