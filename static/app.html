@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menaxhimi i Ankesave</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -725,10 +724,10 @@
     </div>
 
     <script>
-        // Supabase Configuration
+        // Supabase Configuration - Custom Implementation
         const SUPABASE_URL = 'https://bqcyyipoimwgzlspzzzl.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_AqOkflDRgGqvZHovR6s9jg_LrSt_Q9c';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxY3l5aXBvaW13Z3psc3B6enpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTcyMjAsImV4cCI6MjA4ODYzMzIyMH0.UEfYcmtXFT4_hAsnqrLark9CT6L21YPhufaEJLpKI_w';
+        const STORAGE_BUCKET = 'ankesa-bucket';
         
         const API_BASE = window.location.origin;
         
@@ -738,6 +737,43 @@
             raport: null,
             vendim: null
         };
+
+        // Simple Supabase Storage Upload Function
+        async function uploadToSupabase(file, type) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${type}_${Date.now()}.${fileExt}`;
+            const filePath = `ankesa-files/${fileName}`;
+            
+            try {
+                const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${filePath}`;
+                
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: file
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    console.error('Upload response:', error);
+                    throw new Error('Upload failed: ' + response.status);
+                }
+                
+                // Construct public URL
+                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filePath}`;
+                
+                return {
+                    url: publicUrl,
+                    name: file.name
+                };
+            } catch (error) {
+                console.error('Upload error:', error);
+                throw error;
+            }
+        }
 
         // Check authentication on page load
         async function checkAuth() {
@@ -809,50 +845,32 @@
             progressBar.style.width = '0%';
             
             try {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${type}_${Date.now()}.${fileExt}`;
-                const filePath = `ankesa-files/${fileName}`;
-                
-                // Simulate progress (Supabase doesn't provide upload progress)
+                // Simulate progress
                 let progress = 0;
                 const interval = setInterval(() => {
-                    progress += 10;
+                    progress += 15;
                     if (progress <= 90) {
                         progressBar.style.width = `${progress}%`;
                     }
-                }, 100);
+                }, 200);
                 
-                const { data, error } = await supabase.storage
-                    .from('ankesa-bucket')
-                    .upload(filePath, file);
+                // Upload using custom function
+                const result = await uploadToSupabase(file, type);
                 
                 clearInterval(interval);
                 progressBar.style.width = '100%';
-                
-                if (error) {
-                    console.error('Upload error:', error);
-                    alert(`Gabim në upload të file: ${error.message}`);
-                    progressDiv.classList.remove('active');
-                    return null;
-                }
-                
-                // Get public URL
-                const { data: urlData } = supabase.storage
-                    .from('ankesa-bucket')
-                    .getPublicUrl(filePath);
                 
                 setTimeout(() => {
                     progressDiv.classList.remove('active');
                     progressBar.style.width = '0%';
                 }, 500);
                 
-                return {
-                    url: urlData.publicUrl,
-                    name: file.name
-                };
+                return result;
             } catch (error) {
                 console.error('Upload error:', error);
+                alert(`Gabim në upload: ${error.message}`);
                 progressDiv.classList.remove('active');
+                progressBar.style.width = '0%';
                 return null;
             }
         }
