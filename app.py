@@ -23,6 +23,21 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# --- FUNKSIONI NDIHMËS PËR DATAT ---
+def parse_date(date_str):
+    """Konverton stringun dd/mm/yyyy në objekt date të Python-it"""
+    if not date_str:
+        return None
+    try:
+        # Provon formatin dd/mm/yyyy
+        return datetime.strptime(date_str, '%d/%m/%Y').date()
+    except ValueError:
+        try:
+            # Si backup, provon edhe formatin ISO nëse dërgohet nga ndonjë sistem tjetër
+            return datetime.fromisoformat(date_str).date()
+        except:
+            return None
+
 # Database Models
 class User(db.Model):
     __tablename__ = 'users'
@@ -72,10 +87,10 @@ class Ankesa(db.Model):
             'autoriteti': self.autoriteti,
             'oeAnkues': self.oe_ankues,
             'paramasa': self.paramasa,
-            'dataAutorizimit': self.data_autorizimit.isoformat() if self.data_autorizimit else None,
+            'dataAutorizimit': self.data_autorizimit.strftime('%d/%m/%Y') if self.data_autorizimit else None,
             'llojiAngazhimit': self.lloji_angazhimit,
             'ekspertiShqyrtues': self.eksperti_shqyrtues,
-            'dataDorezimet': self.data_dorezimet.isoformat() if self.data_dorezimet else None,
+            'dataDorezimet': self.data_dorezimet.strftime('%d/%m/%Y') if self.data_dorezimet else None,
             'shqyrtimiDite': self.shqyrtimi_dite,
             'rekomandimi': self.rekomandimi,
             'vendimi': self.vendimi,
@@ -163,11 +178,16 @@ def create_ankesa():
     data = request.json
     
     try:
+        # Përdorimi i funksionit parse_date për formatin dd/mm/yyyy
+        data_auth = parse_date(data.get('dataAutorizimit'))
+        data_dor = parse_date(data.get('dataDorezimet'))
+        
+        if not data_dor:
+             return jsonify({'error': 'Data e dorëzimit është e detyrueshme në formatin dd/mm/yyyy'}), 400
+
         # Calculate shqyrtimi_dite
         shqyrtimi_dite = None
-        if data.get('dataAutorizimit') and data.get('dataDorezimet'):
-            data_auth = datetime.fromisoformat(data['dataAutorizimit']).date()
-            data_dor = datetime.fromisoformat(data['dataDorezimet']).date()
+        if data_auth and data_dor:
             shqyrtimi_dite = (data_dor - data_auth).days
         
         # Set eksperti_shqyrtues based on lloji_angazhimit
@@ -181,10 +201,10 @@ def create_ankesa():
             autoriteti=data['autoriteti'],
             oe_ankues=data['oeAnkues'],
             paramasa=data.get('paramasa'),
-            data_autorizimit=datetime.fromisoformat(data['dataAutorizimit']).date() if data.get('dataAutorizimit') else None,
+            data_autorizimit=data_auth,
             lloji_angazhimit=data['llojiAngazhimit'],
             eksperti_shqyrtues=eksperti_shqyrtues,
-            data_dorezimet=datetime.fromisoformat(data['dataDorezimet']).date(),
+            data_dorezimet=data_dor,
             shqyrtimi_dite=shqyrtimi_dite,
             rekomandimi=data.get('rekomandimi'),
             vendimi=data.get('vendimi'),
@@ -219,11 +239,12 @@ def update_ankesa(id):
     data = request.json
     
     try:
+        data_auth = parse_date(data.get('dataAutorizimit'))
+        data_dor = parse_date(data.get('dataDorezimet'))
+
         # Calculate shqyrtimi_dite
         shqyrtimi_dite = None
-        if data.get('dataAutorizimit') and data.get('dataDorezimet'):
-            data_auth = datetime.fromisoformat(data['dataAutorizimit']).date()
-            data_dor = datetime.fromisoformat(data['dataDorezimet']).date()
+        if data_auth and data_dor:
             shqyrtimi_dite = (data_dor - data_auth).days
         
         # Set eksperti_shqyrtues based on lloji_angazhimit
@@ -236,10 +257,10 @@ def update_ankesa(id):
         ankesa.autoriteti = data['autoriteti']
         ankesa.oe_ankues = data['oeAnkues']
         ankesa.paramasa = data.get('paramasa')
-        ankesa.data_autorizimit = datetime.fromisoformat(data['dataAutorizimit']).date() if data.get('dataAutorizimit') else None
+        ankesa.data_autorizimit = data_auth
         ankesa.lloji_angazhimit = data['llojiAngazhimit']
         ankesa.eksperti_shqyrtues = eksperti_shqyrtues
-        ankesa.data_dorezimet = datetime.fromisoformat(data['dataDorezimet']).date()
+        ankesa.data_dorezimet = data_dor if data_dor else ankesa.data_dorezimet
         ankesa.shqyrtimi_dite = shqyrtimi_dite
         ankesa.rekomandimi = data.get('rekomandimi')
         ankesa.vendimi = data.get('vendimi')
@@ -253,7 +274,6 @@ def update_ankesa(id):
         ankesa.statusi_pageses = data['statusiPageses']
         
         db.session.commit()
-        
         return jsonify(ankesa.to_dict())
     except Exception as e:
         db.session.rollback()
@@ -263,7 +283,6 @@ def update_ankesa(id):
 @login_required
 def delete_ankesa(id):
     ankesa = Ankesa.query.get_or_404(id)
-    
     try:
         db.session.delete(ankesa)
         db.session.commit()
