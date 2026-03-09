@@ -193,7 +193,6 @@ def create_ankesa():
     except Exception as e:
         db.session.rollback(); return jsonify({'error': str(e)}), 400
 
-# --- ENDPOINT-I I RI PËR EKSPORTIN NË EXCEL ---
 @app.route('/api/ankesa/export', methods=['GET'])
 @login_required
 def export_excel():
@@ -213,4 +212,58 @@ def export_excel():
             'Ditë Shqyrtimi': a.shqyrtimi_dite,
             'Rekomandimi': a.rekomandimi,
             'Vendimi': a.vendimi,
-            'Nr. Faturës': a.
+            'Nr. Faturës': a.nr_fatures,
+            'Shuma Bruto (€)': a.shuma_bruto,
+            'Shuma Neto (€)': a.shuma_neto,
+            'Statusi': a.statusi_pageses
+        })
+
+    df = pd.DataFrame(data)
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Ankesat')
+    
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f"Ankesat_{datetime.now().strftime('%d_%m_%Y')}.xlsx"
+    )
+
+@app.route('/api/statistika', methods=['GET'])
+@login_required
+def get_statistika():
+    total = Ankesa.query.count()
+    paguar = Ankesa.query.filter_by(statusi_pageses='Paguar').count()
+    papaguar = Ankesa.query.filter_by(statusi_pageses='Papaguar').count()
+    pjeserisht = Ankesa.query.filter_by(statusi_pageses='Pjesërisht').count()
+    total_shuma = db.session.query(db.func.sum(Ankesa.shuma_neto)).scalar() or 0
+    return jsonify({
+        'total': total, 
+        'paguar': paguar, 
+        'papaguar': papaguar, 
+        'pjeserisht': pjeserisht, 
+        'totalShuma': float(total_shuma)
+    })
+
+@app.route('/api/raport-mujor', methods=['GET'])
+@login_required
+def raport_mujor():
+    month = request.args.get('month', type=int)
+    year = request.args.get('year', type=int)
+    if not month or not year:
+        return jsonify({'error': 'Muaji dhe viti janë të detyrueshëm'}), 400
+    ankesa_list = Ankesa.query.filter(
+        db.extract('month', Ankesa.data_dorezimet) == month,
+        db.extract('year', Ankesa.data_dorezimet) == year
+    ).all()
+    return jsonify({
+        'total': len(ankesa_list),
+        'totalNeto': sum(a.shuma_neto or 0 for a in ankesa_list),
+        'ankesa': [a.to_dict() for a in ankesa_list]
+    })
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
