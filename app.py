@@ -158,6 +158,57 @@ def create_ankesa():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/api/ankesa/<int:id>', methods=['PUT'])
+@login_required
+def update_ankesa(id):
+    ankesa = Ankesa.query.get_or_404(id)
+    data = request.json
+    try:
+        d_auth = parse_date(data.get('dataAutorizimit'))
+        d_dor = parse_date(data.get('dataDorezimet'))
+        
+        lloji = data.get('llojiAngazhimit')
+        eksperti = data.get('ekspertiShqyrtues')
+        if lloji in ['Ekspert Shqyrtues', 'Superekspertizë']:
+            eksperti = 'N/A'
+        
+        ankesa.nr_protokollit = data['nrProtokollit']
+        ankesa.nr_prokurimit = data.get('nrProkurimit')
+        ankesa.titulli_aktivitetit = data['titulliAktivitetit']
+        ankesa.autoriteti = data['autoriteti']
+        ankesa.oe_ankues = data['oeAnkues']
+        ankesa.data_autorizimit = d_auth
+        ankesa.data_dorezimet = d_dor
+        ankesa.lloji_angazhimit = lloji
+        ankesa.eksperti_shqyrtues = eksperti
+        ankesa.shqyrtimi_dite = (d_dor - d_auth).days if d_auth and d_dor else None
+        ankesa.rekomandimi = data.get('rekomandimi')
+        ankesa.vendimi = data.get('vendimi')
+        ankesa.nr_fatures = data.get('nrFatures')
+        ankesa.shuma_bruto = float(data['shumaBruto']) if data.get('shumaBruto') else 0
+        ankesa.shuma_neto = float(data['shumaNeto']) if data.get('shumaNeto') else 0
+        ankesa.statusi_pageses = data['statusiPageses']
+        ankesa.raport_file_url = data.get('raportFileUrl')
+        ankesa.vendim_file_url = data.get('vendimFileUrl')
+        
+        db.session.commit()
+        return jsonify(ankesa.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/ankesa/<int:id>', methods=['DELETE'])
+@login_required
+def delete_ankesa(id):
+    ankesa = Ankesa.query.get_or_404(id)
+    try:
+        db.session.delete(ankesa)
+        db.session.commit()
+        return jsonify({'message': 'Deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
 @app.route('/api/ankesa/export')
 @login_required
 def export_excel():
