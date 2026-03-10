@@ -46,6 +46,7 @@ class Ankesa(db.Model):
     shqyrtimi_dite = db.Column(db.Integer)
     rekomandimi = db.Column(db.Text)
     vendimi = db.Column(db.Text)
+    seanca = db.Column(db.String(3))
     raport_file_url = db.Column(db.String(500))
     raport_file_name = db.Column(db.String(255))
     vendim_file_url = db.Column(db.String(500))
@@ -71,6 +72,7 @@ class Ankesa(db.Model):
             'shqyrtimiDite': self.shqyrtimi_dite,
             'rekomandimi': self.rekomandimi,
             'vendimi': self.vendimi,
+            'seanca': self.seanca,
             'nrFatures': self.nr_fatures,
             'statusiPageses': self.statusi_pageses,
             'shumaNeto': self.shuma_neto,
@@ -145,6 +147,7 @@ def create_ankesa():
             shqyrtimi_dite=(d_dor - d_auth).days if d_auth and d_dor else None,
             rekomandimi=data.get('rekomandimi'),
             vendimi=data.get('vendimi'),
+            seanca=data.get('seanca'),
             nr_fatures=data.get('nrFatures'),
             shuma_bruto=float(data['shumaBruto']) if data.get('shumaBruto') else 0,
             shuma_neto=float(data['shumaNeto']) if data.get('shumaNeto') else 0,
@@ -184,6 +187,7 @@ def update_ankesa(id):
         ankesa.shqyrtimi_dite = (d_dor - d_auth).days if d_auth and d_dor else None
         ankesa.rekomandimi = data.get('rekomandimi')
         ankesa.vendimi = data.get('vendimi')
+        ankesa.seanca = data.get('seanca')
         ankesa.nr_fatures = data.get('nrFatures')
         ankesa.shuma_bruto = float(data['shumaBruto']) if data.get('shumaBruto') else 0
         ankesa.shuma_neto = float(data['shumaNeto']) if data.get('shumaNeto') else 0
@@ -229,6 +233,7 @@ def export_excel():
             'Shqyrtimi (ditë)': a.shqyrtimi_dite or '',
             'Rekomandimi': a.rekomandimi or '',
             'Vendimi': a.vendimi or '',
+            'Seanca': a.seanca or '',
             'Raport (URL)': a.raport_file_url or '',
             'Vendimi (URL)': a.vendim_file_url or '',
             'Nr. Faturës': a.nr_fatures or '',

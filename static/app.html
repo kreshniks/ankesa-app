@@ -175,6 +175,16 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label>Seanca</label>
+                        <div>
+                            <input type="radio" id="seancaPo" name="seanca" value="Po">
+                            <label for="seancaPo">Po</label>
+                            <input type="radio" id="seancaJo" name="seanca" value="Jo">
+                            <label for="seancaJo">Jo</label>
+                        </div>
+                    </div>
+
                     <div class="form-group full-width">
                         <label>Rekomandimi</label>
                         <textarea id="rekomandimi"></textarea>
@@ -226,6 +236,7 @@
                             <th style="min-width: 70px;">Shqyrtimi (ditë)</th>
                             <th style="min-width: 150px;">Rekomandimi</th>
                             <th style="min-width: 150px;">Vendimi</th>
+                            <th style="min-width: 70px;">Seanca</th>
                             <th style="min-width: 90px;">Raport</th>
                             <th style="min-width: 90px;">Vendimi (file)</th>
                             <th style="min-width: 90px;">Nr. Faturës</th>
@@ -307,6 +318,7 @@
                     <td>${a.shqyrtimiDite || '-'}</td>
                     <td>${truncate(a.rekomandimi, 50)}</td>
                     <td>${truncate(a.vendimi, 50)}</td>
+                    <td>${a.seanca || '-'}</td>
                     <td>${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
                     <td>${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
                     <td>${a.nrFatures || '-'}</td>
@@ -382,6 +394,10 @@
                     <div class="detail-value">${ankesa.vendimi || '-'}</div>
                 </div>
                 <div class="detail-row">
+                    <div class="detail-label">Seanca:</div>
+                    <div class="detail-value">${ankesa.seanca || '-'}</div>
+                </div>
+                <div class="detail-row">
                     <div class="detail-label">Raport (Link):</div>
                     <div class="detail-value">${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank">${ankesa.raportFileUrl}</a>` : '-'}</div>
                 </div>
@@ -433,6 +449,11 @@
             document.getElementById('shumaBruto').value = ankesa.shumaBruto || '';
             document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
             document.getElementById('statusiPageses').value = ankesa.statusiPageses;
+            if (ankesa.seanca === 'Po') {
+                document.getElementById('seancaPo').checked = true;
+            } else if (ankesa.seanca === 'Jo') {
+                document.getElementById('seancaJo').checked = true;
+            }
             document.getElementById('rekomandimi').value = ankesa.rekomandimi || '';
             document.getElementById('vendimi').value = ankesa.vendimi || '';
             document.getElementById('raportFileUrl').value = ankesa.raportFileUrl || '';
@@ -504,6 +525,7 @@
                 shumaBruto: document.getElementById('shumaBruto').value,
                 shumaNeto: document.getElementById('shumaNeto').value,
                 statusiPageses: document.getElementById('statusiPageses').value,
+                seanca: document.querySelector('input[name="seanca"]:checked') ? document.querySelector('input[name="seanca"]:checked').value : null,
                 rekomandimi: document.getElementById('rekomandimi').value,
                 vendimi: document.getElementById('vendimi').value,
                 nrFatures: document.getElementById('nrFatures').value,
