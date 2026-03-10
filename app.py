@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__, static_folder='static')
 CORS(app, supports_credentials=True)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'ankesa-secret-key-2026')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sekreti-2026')
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///ankesa.db')
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -20,7 +20,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# FUNKSIONI NDIHMËS PËR DATAT
 def parse_date(date_str):
     if not date_str: return None
     try:
@@ -35,7 +34,7 @@ class Ankesa(db.Model):
     __tablename__ = 'ankesa'
     id = db.Column(db.Integer, primary_key=True)
     nr_protokollit = db.Column(db.String(100), nullable=False)
-    nr_prokurimit = db.Column(db.String(100)) # Fusha e re
+    nr_prokurimit = db.Column(db.String(100))
     titulli_aktivitetit = db.Column(db.Text, nullable=False)
     autoriteti = db.Column(db.String(255), nullable=False)
     oe_ankues = db.Column(db.String(255), nullable=False)
@@ -102,12 +101,21 @@ def login():
     if data.get('username') == 'admin' and data.get('password') == 'admin123':
         session['user_id'] = 1
         return jsonify({'message': 'Suksese'}), 200
-    return jsonify({'error': 'Gabim në kredencialet'}), 401
+    return jsonify({'error': 'Gabim'}), 401
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'Logged out'}), 200
+
+@app.route('/api/check-auth')
+def check_auth():
+    return jsonify({'authenticated': 'user_id' in session}), 200
 
 @app.route('/api/ankesa', methods=['GET'])
 @login_required
 def get_ankesa():
-    # NDRYSHIMI: Renditja sipas data_autorizimit (më e afërta lart)
+    # RENDITJA: Data e Autorizimit (Nulls Last do të thotë ata pa datë shkojnë në fund)
     ankesat = Ankesa.query.order_by(Ankesa.data_autorizimit.desc().nullslast()).all()
     return jsonify([a.to_dict() for a in ankesat])
 
@@ -116,12 +124,9 @@ def get_ankesa():
 def create_ankesa():
     data = request.json
     try:
-        data_auth = parse_date(data.get('dataAutorizimit'))
-        data_dor = parse_date(data.get('dataDorezimet'))
+        d_auth = parse_date(data.get('dataAutorizimit'))
+        d_dor = parse_date(data.get('dataDorezimet'))
         
-        shqyrtimi_dite = (data_dor - data_auth).days if data_auth and data_dor else None
-        
-        # NDRYSHIMI: Logjika për N/A në llojin e angazhimit
         lloji = data.get('llojiAngazhimit')
         eksperti = data.get('ekspertiShqyrtues')
         if lloji in ['Ekspert Shqyrtues', 'Superekspertizë']:
@@ -133,11 +138,11 @@ def create_ankesa():
             titulli_aktivitetit=data['titulliAktivitetit'],
             autoriteti=data['autoriteti'],
             oe_ankues=data['oeAnkues'],
-            data_autorizimit=data_auth,
-            data_dorezimet=data_dor,
+            data_autorizimit=d_auth,
+            data_dorezimet=d_dor,
             lloji_angazhimit=lloji,
             eksperti_shqyrtues=eksperti,
-            shqyrtimi_dite=shqyrtimi_dite,
+            shqyrtimi_dite=(d_dor - d_auth).days if d_auth and d_dor else None,
             rekomandimi=data.get('rekomandimi'),
             vendimi=data.get('vendimi'),
             nr_fatures=data.get('nrFatures'),
@@ -153,19 +158,10 @@ def create_ankesa():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/statistika')
-@login_required
-def get_stats():
-    total = Ankesa.query.count()
-    total_shuma = db.session.query(db.func.sum(Ankesa.shuma_neto)).scalar() or 0
-    return jsonify({'total': total, 'totalShuma': float(total_shuma)})
-
 @app.route('/api/ankesa/export')
 @login_required
 def export_excel():
-    # Eksporti përdor të njëjtën renditje si lista
     ankesat = Ankesa.query.order_by(Ankesa.data_autorizimit.desc().nullslast()).all()
-    
     data_list = []
     for a in ankesat:
         data_list.append({
@@ -173,29 +169,17 @@ def export_excel():
             'Nr. Prokurimit': a.nr_prokurimit,
             'Titulli': a.titulli_aktivitetit,
             'Autoriteti': a.autoriteti,
-            'OE Ankues': a.oe_ankues,
             'Data Autorizimit': a.data_autorizimit.strftime('%d/%m/%Y') if a.data_autorizimit else '',
-            'Lloji Angazhimit': a.lloji_angazhimit,
-            'Eksperti': a.eksperti_shqyrtues,
             'Data Dorëzimit': a.data_dorezimet.strftime('%d/%m/%Y') if a.data_dorezimet else '',
-            'Shuma Bruto': a.shuma_bruto,
             'Shuma Neto': a.shuma_neto,
-            'Statusi': a.statusi_pageses,
-            'Fatura': a.nr_fatures
+            'Statusi': a.statusi_pageses
         })
-    
     df = pd.DataFrame(data_list)
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Ekspertizat')
-    output.seek(0)
-    
-    return send_file(
-        output, 
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-        as_attachment=True, 
-        download_name=f"Ekspertizat_{datetime.now().strftime('%d_%m_%Y')}.xlsx"
-    )
+    out = io.BytesIO()
+    with pd.ExcelWriter(out, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    out.seek(0)
+    return send_file(out, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name="Ekspertizat.xlsx")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
