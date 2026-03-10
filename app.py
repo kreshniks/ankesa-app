@@ -214,21 +214,55 @@ def delete_ankesa(id):
 def export_excel():
     ankesat = Ankesa.query.order_by(Ankesa.data_autorizimit.desc().nullslast()).all()
     data_list = []
-    for a in ankesat:
+    for i, a in enumerate(ankesat, 1):
         data_list.append({
+            'Nr': i,
             'Nr. Protokollit': a.nr_protokollit,
-            'Nr. Prokurimit': a.nr_prokurimit,
-            'Titulli': a.titulli_aktivitetit,
-            'Autoriteti': a.autoriteti,
+            'Nr. Prokurimit': a.nr_prokurimit or '',
+            'Titulli i Aktivitetit': a.titulli_aktivitetit,
+            'Autoriteti Kontraktues': a.autoriteti,
+            'OE Ankues': a.oe_ankues,
             'Data Autorizimit': a.data_autorizimit.strftime('%d/%m/%Y') if a.data_autorizimit else '',
             'Data Dorëzimit': a.data_dorezimet.strftime('%d/%m/%Y') if a.data_dorezimet else '',
-            'Shuma Neto': a.shuma_neto,
-            'Statusi': a.statusi_pageses
+            'Lloji Angazhimit': a.lloji_angazhimit,
+            'Eksperti Shqyrtues': a.eksperti_shqyrtues or 'N/A',
+            'Shqyrtimi (ditë)': a.shqyrtimi_dite or '',
+            'Rekomandimi': a.rekomandimi or '',
+            'Vendimi': a.vendimi or '',
+            'Raport (URL)': a.raport_file_url or '',
+            'Vendimi (URL)': a.vendim_file_url or '',
+            'Nr. Faturës': a.nr_fatures or '',
+            'Shuma Bruto (€)': a.shuma_bruto or 0,
+            'Shuma Neto (€)': a.shuma_neto or 0,
+            'Statusi Pagesës': a.statusi_pageses
         })
     df = pd.DataFrame(data_list)
     out = io.BytesIO()
     with pd.ExcelWriter(out, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False)
+        df.to_excel(writer, index=False, sheet_name='Ekspertizat')
+        
+        # Get the worksheet
+        worksheet = writer.sheets['Ekspertizat']
+        
+        # Auto-adjust column widths
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)  # Max width 50
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Enable text wrapping for all cells
+        from openpyxl.styles import Alignment
+        for row in worksheet.iter_rows():
+            for cell in row:
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
+        
     out.seek(0)
     return send_file(out, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name="Ekspertizat.xlsx")
 
