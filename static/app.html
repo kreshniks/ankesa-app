@@ -15,12 +15,11 @@
         .logout-btn:hover { background: white; color: #667eea; }
         .tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #dee2e6; }
         .tab { flex: 1; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; font-weight: 600; color: #495057; border: none; background: none; font-size: 16px; }
-        .tab:hover { background: #e9ecef; }
         .tab.active { background: white; color: #667eea; border-bottom: 3px solid #667eea; }
         .tab-content { display: none; padding: 30px; }
         .tab-content.active { display: block; }
         
-        /* NDRYSHIMI: Grid me 3 kolona për rreshtat e parë */
+        /* GRID ME 3 KOLONA */
         .form-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -32,8 +31,7 @@
         .form-group.full-width { grid-column: 1 / -1; }
         
         label { font-weight: 600; margin-bottom: 8px; color: #495057; }
-        input, textarea, select { padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; transition: border 0.3s; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; }
+        input, textarea, select { padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; }
         textarea { resize: vertical; min-height: 80px; }
         
         .conditional-field { display: none; }
@@ -42,24 +40,15 @@
         .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: #28a745; color: white; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-small { padding: 6px 12px; font-size: 12px; }
         
         .table-container { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
         th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 10px; text-align: left; position: sticky; top: 0; }
         td { padding: 10px; border-bottom: 1px solid #dee2e6; }
         .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .status-paguar { background: #d4edda; color: #155724; }
-        .status-papaguar { background: #f8d7da; color: #721c24; }
 
-        @media (max-width: 1024px) {
-            .form-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1024px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -76,7 +65,6 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('regjistrim', event)">➕ Regjistro Ekspertizë</button>
             <button class="tab" onclick="switchTab('lista', event)">📊 Lista e Ekspertizave</button>
-            <button class="tab" onclick="switchTab('raporte', event)">📈 Raporte & Statistika</button>
         </div>
 
         <div id="regjistrim" class="tab-content active">
@@ -162,12 +150,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Bashkëngjit Raportin (Raporti)</label>
-                        <input type="file" id="raportFile" accept=".pdf,.doc,.docx">
+                        <label>Bashkëngjit Raportin (URL)</label>
+                        <input type="text" id="raportFileUrl" placeholder="https://...">
                     </div>
                     <div class="form-group">
-                        <label>Bashkëngjit Vendimin (Vendimi)</label>
-                        <input type="file" id="vendimFile" accept=".pdf,.doc,.docx">
+                        <label>Bashkëngjit Vendimin (URL)</label>
+                        <input type="text" id="vendimFileUrl" placeholder="https://...">
                     </div>
                     <div class="form-group">
                         <label>Nr. i Faturës</label>
@@ -179,7 +167,7 @@
         </div>
 
         <div id="lista" class="tab-content">
-            <div class="export-buttons">
+            <div class="export-buttons" style="margin-bottom: 20px;">
                 <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel</button>
             </div>
             <div class="table-container">
@@ -190,14 +178,12 @@
                             <th>Nr. Protokolli</th>
                             <th>Nr. Prokurimit</th>
                             <th>Titulli</th>
-                            <th>Autoriteti</th>
                             <th>Lloji</th>
                             <th>Eksperti</th>
                             <th>Data Aut.</th>
                             <th>Data Dor.</th>
                             <th>Shuma Neto</th>
                             <th>Statusi</th>
-                            <th>Veprime</th>
                         </tr>
                     </thead>
                     <tbody id="ankesetTableBody"></tbody>
@@ -209,7 +195,6 @@
     <script>
         const API_BASE = window.location.origin;
         let ankeset = [];
-        let editingId = null;
 
         async function checkAuth() {
             const res = await fetch(`${API_BASE}/api/check-auth`);
@@ -225,15 +210,8 @@
         function toggleEkspertiField() {
             const lloji = document.getElementById('llojiAngazhimit').value;
             const field = document.getElementById('ekspertiShqyrtuesField');
-            const input = document.getElementById('ekspertiShqyrtues');
-            if (lloji === 'Ekspert Teknik') {
-                field.classList.add('show');
-                input.required = true;
-            } else {
-                field.classList.remove('show');
-                input.required = false;
-                input.value = '';
-            }
+            if (lloji === 'Ekspert Teknik') field.classList.add('show');
+            else field.classList.remove('show');
         }
 
         async function loadAnkesa() {
@@ -248,16 +226,12 @@
                     <td>${a.nrProtokollit}</td>
                     <td>${a.nrProkurimit || '-'}</td>
                     <td>${a.titulliAktivitetit.substring(0, 30)}...</td>
-                    <td>${a.autoriteti}</td>
                     <td>${a.llojiAngazhimit}</td>
                     <td>${a.ekspertiShqyrtues}</td>
                     <td>${a.dataAutorizimit || '-'}</td>
                     <td>${a.dataDorezimet}</td>
                     <td>${a.shumaNeto} €</td>
-                    <td><span class="status-badge status-${a.statusiPageses.toLowerCase()}">${a.statusiPageses}</span></td>
-                    <td>
-                        <button class="btn btn-warning btn-small" onclick="editAnkesa(${a.id})">✏️</button>
-                    </td>
+                    <td>${a.statusiPageses}</td>
                 `;
             });
         }
@@ -271,30 +245,31 @@
                 autoriteti: document.getElementById('autoriteti').value,
                 oeAnkues: document.getElementById('oeAnkues').value,
                 dataAutorizimit: formatDateForBackend(document.getElementById('dataAutorizimit').value),
+                dataDorezimet: formatDateForBackend(document.getElementById('dataDorezimet').value),
                 llojiAngazhimit: document.getElementById('llojiAngazhimit').value,
                 ekspertiShqyrtues: document.getElementById('ekspertiShqyrtues').value,
-                dataDorezimet: formatDateForBackend(document.getElementById('dataDorezimet').value),
                 shumaBruto: document.getElementById('shumaBruto').value,
                 shumaNeto: document.getElementById('shumaNeto').value,
                 statusiPageses: document.getElementById('statusiPageses').value,
                 rekomandimi: document.getElementById('rekomandimi').value,
                 vendimi: document.getElementById('vendimi').value,
-                nrFatures: document.getElementById('nrFatures').value
+                nrFatures: document.getElementById('nrFatures').value,
+                raportFileUrl: document.getElementById('raportFileUrl').value,
+                vendimFileUrl: document.getElementById('vendimFileUrl').value
             };
 
-            const method = editingId ? 'PUT' : 'POST';
-            const url = editingId ? `${API_BASE}/api/ankesa/${editingId}` : `${API_BASE}/api/ankesa`;
-
-            await fetch(url, {
-                method,
+            const res = await fetch(`${API_BASE}/api/ankesa`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
 
-            document.getElementById('ankeseForm').reset();
-            editingId = null;
-            loadAnkesa();
-            switchTab('lista');
+            if (res.ok) {
+                alert('Ekspertiza u ruajt saktë!');
+                document.getElementById('ankeseForm').reset();
+                loadAnkesa();
+                switchTab('lista');
+            }
         });
 
         function formatDateForBackend(val) {
@@ -303,38 +278,12 @@
             return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
         }
 
-        function formatDateForInput(str) {
-            if (!str || !str.includes('/')) return '';
-            const p = str.split('/');
-            return `${p[2]}-${p[1]}-${p[0]}`;
-        }
-
-        function editAnkesa(id) {
-            const a = ankeset.find(x => x.id === id);
-            editingId = id;
-            document.getElementById('nrProtokollit').value = a.nrProtokollit;
-            document.getElementById('nr_prokurimit').value = a.nrProkurimit || '';
-            document.getElementById('titulliAktivitetit').value = a.titulliAktivitetit;
-            document.getElementById('autoriteti').value = a.autoriteti;
-            document.getElementById('dataAutorizimit').value = formatDateForInput(a.dataAutorizimit);
-            document.getElementById('dataDorezimet').value = formatDateForInput(a.dataDorezimet);
-            document.getElementById('llojiAngazhimit').value = a.llojiAngazhimit;
-            toggleEkspertiField();
-            document.getElementById('ekspertiShqyrtues').value = a.ekspertiShqyrtues;
-            document.getElementById('shumaBruto').value = a.shumaBruto.toFixed(2);
-            document.getElementById('shumaNeto').value = a.shumaNeto.toFixed(2);
-            document.getElementById('statusiPageses').value = a.statusiPageses;
-            document.getElementById('rekomandimi').value = a.rekomandimi || '';
-            document.getElementById('vendimi').value = a.vendimi || '';
-            document.getElementById('nrFatures').value = a.nrFatures || '';
-            switchTab('regjistrim');
-        }
-
         function switchTab(name, e) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             if (e) e.target.classList.add('active');
             document.getElementById(name).classList.add('active');
+            if (name === 'lista') loadAnkesa();
         }
 
         function exportToExcel() { window.location.href = '/api/ankesa/export'; }
