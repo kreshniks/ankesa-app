@@ -296,41 +296,51 @@
         }
 
         async function loadAnkesa() {
-            const res = await fetch(`${API_BASE}/api/ankesa`, { credentials: 'include' });
-            ankeset = await res.json();
-            const tbody = document.getElementById('ankesetTableBody');
-            tbody.innerHTML = '';
-            
-            ankeset.forEach((a, i) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${i + 1}</td>
-                    <td>${a.nrProtokollit}</td>
-                    <td>${a.nrProkurimit || '-'}</td>
-                    <td>${a.titulliAktivitetit}</td>
-                    <td>${a.autoriteti}</td>
-                    <td>${a.oeAnkues}</td>
-                    <td>${a.dataAutorizimit || '-'}</td>
-                    <td>${a.dataDorezimet}</td>
-                    <td>${a.llojiAngazhimit}</td>
-                    <td>${a.ekspertiShqyrtues || 'N/A'}</td>
-                    <td>${a.shqyrtimiDite || '-'}</td>
-                    <td>${truncate(a.rekomandimi, 50)}</td>
-                    <td>${truncate(a.vendimi, 50)}</td>
-                    <td>${a.seanca || '-'}</td>
-                    <td>${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
-                    <td>${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
-                    <td>${a.nrFatures || '-'}</td>
-                    <td>${a.shumaBruto || '-'} €</td>
-                    <td>${a.shumaNeto || '-'} €</td>
-                    <td><span class="status-badge status-${a.statusiPageses.toLowerCase()}">${a.statusiPageses}</span></td>
-                    <td class="actions">
-                        <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})">👁️ Shiko</button>
-                        <button class="btn btn-warning btn-small" onclick="editAnkesa(${a.id})">✏️ Edit</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})">🗑️ Fshi</button>
-                    </td>
-                `;
-            });
+            try {
+                const res = await fetch(`${API_BASE}/api/ankesa`, { credentials: 'include' });
+                console.log('API Response:', res);
+                if (!res.ok) {
+                    console.error('API request failed with status:', res.status);
+                    return;
+                }
+                ankeset = await res.json();
+                console.log('Ankesat data:', ankeset);
+                const tbody = document.getElementById('ankesetTableBody');
+                tbody.innerHTML = '';
+                
+                ankeset.forEach((a, i) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${a.nrProtokollit}</td>
+                        <td>${a.nrProkurimit || '-'}</td>
+                        <td>${a.titulliAktivitetit}</td>
+                        <td>${a.autoriteti}</td>
+                        <td>${a.oeAnkues}</td>
+                        <td>${a.dataAutorizimit || '-'}</td>
+                        <td>${a.dataDorezimet}</td>
+                        <td>${a.llojiAngazhimit}</td>
+                        <td>${a.ekspertiShqyrtues || 'N/A'}</td>
+                        <td>${a.shqyrtimiDite || '-'}</td>
+                        <td>${truncate(a.rekomandimi, 50)}</td>
+                        <td>${truncate(a.vendimi, 50)}</td>
+                        <td>${a.seanca || '-'}</td>
+                        <td>${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
+                        <td>${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
+                        <td>${a.nrFatures || '-'}</td>
+                        <td>${a.shumaBruto || '-'} €</td>
+                        <td>${a.shumaNeto || '-'} €</td>
+                        <td><span class="status-badge status-${a.statusiPageses.toLowerCase()}">${a.statusiPageses}</span></td>
+                        <td class="actions">
+                            <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})">👁️ Shiko</button>
+                            <button class="btn btn-warning btn-small" onclick="editAnkesa(${a.id})">✏️ Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})">🗑️ Fshi</button>
+                        </td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error in loadAnkesa:', error);
+            }
         }
 
         function truncate(text, length) {
