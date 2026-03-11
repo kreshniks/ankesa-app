@@ -177,12 +177,11 @@
 
                     <div class="form-group">
                         <label>Seanca</label>
-                        <div>
-                            <input type="radio" id="seancaPo" name="seanca" value="Po">
-                            <label for="seancaPo">Po</label>
-                            <input type="radio" id="seancaJo" name="seanca" value="Jo">
-                            <label for="seancaJo">Jo</label>
-                        </div>
+                        <select id="seanca">
+                            <option value="">-- Zgjidhni --</option>
+                            <option value="Po">Po</option>
+                            <option value="Jo">Jo</option>
+                        </select>
                     </div>
 
                     <div class="form-group full-width">
@@ -449,11 +448,7 @@
             document.getElementById('shumaBruto').value = ankesa.shumaBruto || '';
             document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
             document.getElementById('statusiPageses').value = ankesa.statusiPageses;
-            if (ankesa.seanca === 'Po') {
-                document.getElementById('seancaPo').checked = true;
-            } else if (ankesa.seanca === 'Jo') {
-                document.getElementById('seancaJo').checked = true;
-            }
+            document.getElementById('seanca').value = ankesa.seanca || '';
             document.getElementById('rekomandimi').value = ankesa.rekomandimi || '';
             document.getElementById('vendimi').value = ankesa.vendimi || '';
             document.getElementById('raportFileUrl').value = ankesa.raportFileUrl || '';
@@ -525,7 +520,7 @@
                 shumaBruto: document.getElementById('shumaBruto').value,
                 shumaNeto: document.getElementById('shumaNeto').value,
                 statusiPageses: document.getElementById('statusiPageses').value,
-                seanca: document.querySelector('input[name="seanca"]:checked') ? document.querySelector('input[name="seanca"]:checked').value : null,
+                seanca: document.getElementById('seanca').value,
                 rekomandimi: document.getElementById('rekomandimi').value,
                 vendimi: document.getElementById('vendimi').value,
                 nrFatures: document.getElementById('nrFatures').value,
