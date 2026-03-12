@@ -579,13 +579,34 @@
             return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
         }
 
-        function switchTab(name, e) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if (e && e.target) e.target.classList.add('active');
-            document.getElementById(name).classList.add('active');
-            if (name === 'lista') loadAnkesa();
-        }
+       function switchTab(name, e) {
+    // Remove active from all tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Add active to clicked button OR find by name
+    if (e && e.target) {
+        e.target.classList.add('active');
+    } else {
+        // Find the correct button when called programmatically
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(btn => {
+            const text = btn.textContent.toLowerCase();
+            if ((name === 'regjistrim' && text.includes('regjistro')) || 
+                (name === 'lista' && text.includes('lista'))) {
+                btn.classList.add('active');
+            }
+        });
+    }
+    
+    // Show corresponding content
+    document.getElementById(name).classList.add('active');
+    
+    // Load data if switching to lista
+    if (name === 'lista') {
+        loadAnkesa();
+    }
+}
 
         function exportToExcel() { 
             window.location.href = `${API_BASE}/api/ankesa/export`; 
