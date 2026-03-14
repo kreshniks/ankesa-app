@@ -456,10 +456,10 @@
                             <input type="date" id="reg_dataAutorizimit">
                         </div>
 
-                        <div class="form-group full-width">
-                            <label>Titulli i Aktivitetit *</label>
-                            <input type="text" id="reg_titulliAktivitetit" required placeholder="Shërbime për...">
-                        </div>
+                        <div class="form-group">
+    <label>Titulli i Aktivitetit *</label>
+    <input type="text" id="reg_titulliAktivitetit" required>
+</div>
 
                         <div class="form-group">
                             <label>Autoriteti Kontraktues *</label>
@@ -494,13 +494,7 @@
                                 <option value="120.00">120,00 €</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group">
-                            <label>Shuma Neto (€)</label>
-                            <input type="text" id="reg_shumaNeto" readonly style="background: #f0f0f0; cursor: not-allowed;" placeholder="Llogaritet automatikisht">
-                            <small style="color: #6c757d; margin-top: 4px;">Llogaritet automatikisht: 150€ → 128,25€ | 120€ → 102,60€</small>
-                        </div>
-
+                      
                         <div class="form-group">
                             <label>Lënda e Përsëritur</label>
                             <select id="reg_lendaPerseritur">
@@ -820,8 +814,7 @@
 
         function autoCalculateNeto() {
             const bruto = document.getElementById('reg_shumaBruto').value;
-            const netoField = document.getElementById('reg_shumaNeto');
-            
+        
             if (bruto === '150.00') {
                 netoField.value = '128.25';
             } else if (bruto === '120.00') {
