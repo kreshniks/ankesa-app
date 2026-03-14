@@ -365,6 +365,31 @@
             color: #1976D2;
         }
 
+        /* CHECKBOXES FOR LISTS */
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 1024px) { 
             .form-grid { grid-template-columns: 1fr 1fr; } 
@@ -409,7 +434,7 @@
                 </div>
                 
                 <div class="info-box">
-                    <strong>ℹ️ Informacion:</strong> Regjistro të dhënat bazë të ekspertizës. Të dhënat e mëposhtme mund të plotësohen më vonë në seksionin "Plotëso të Dhënat".
+                    <strong>ℹ️ Informacion:</strong> Regjistro të dhënat bazë të ekspertizës. Shuma Neto llogaritet automatikisht nga Shuma Bruto.
                 </div>
                 
                 <div id="formAlert1"></div>
@@ -463,7 +488,7 @@
                         
                         <div class="form-group">
                             <label>Shuma Bruto (€) *</label>
-                            <select id="reg_shumaBruto" required>
+                            <select id="reg_shumaBruto" required onchange="autoCalculateNeto()">
                                 <option value="">-- Zgjidhni --</option>
                                 <option value="150.00">150,00 €</option>
                                 <option value="120.00">120,00 €</option>
@@ -471,12 +496,24 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Shuma Neto (€) *</label>
-                            <select id="reg_shumaNeto" required>
+                            <label>Shuma Neto (€)</label>
+                            <input type="text" id="reg_shumaNeto" readonly style="background: #f0f0f0; cursor: not-allowed;" placeholder="Llogaritet automatikisht">
+                            <small style="color: #6c757d; margin-top: 4px;">Llogaritet automatikisht: 150€ → 128,25€ | 120€ → 102,60€</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Lënda e Përsëritur</label>
+                            <select id="reg_lendaPerseritur">
                                 <option value="">-- Zgjidhni --</option>
-                                <option value="128.25">128,25 €</option>
-                                <option value="102.60">102,60 €</option>
+                                <option value="Po">Po</option>
+                                <option value="Jo">Jo</option>
                             </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Bashkëngjit Autorizimin</label>
+                            <input type="file" id="reg_autorizimFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <small style="color: #6c757d; margin-top: 4px;">Formatet e lejuara: PDF, Word, Imazhe (opsionale)</small>
                         </div>
                     </div>
                     
@@ -520,6 +557,28 @@
                                 <input type="number" id="plt_shqyrtimiDite" readonly style="background: #f0f0f0; cursor: not-allowed;">
                                 <small style="color: #6c757d; margin-top: 4px;">Llogaritet automatikisht</small>
                             </div>
+
+                            <div class="form-group full-width">
+                                <label>Rekomandimi</label>
+                                <div class="checkbox-list">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="rek_rivleresim" value="Rivlerësim">
+                                        <label for="rek_rivleresim">Rivlerësim</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="rek_vertetim" value="Vërtetim i vendimit të AK">
+                                        <label for="rek_vertetim">Vërtetim i vendimit të AK</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="rek_korrigjim" value="Korrigjim i dosjes">
+                                        <label for="rek_korrigjim">Korrigjim i dosjes</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="rek_anulim" value="Anulim">
+                                        <label for="rek_anulim">Anulim</label>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="form-group">
                                 <label>Seanca</label>
@@ -531,23 +590,37 @@
                             </div>
 
                             <div class="form-group full-width">
-                                <label>Rekomandimi</label>
-                                <textarea id="plt_rekomandimi" placeholder="Shkruaj rekomandimin..."></textarea>
-                            </div>
-                            
-                            <div class="form-group full-width">
                                 <label>Vendimi</label>
-                                <textarea id="plt_vendimi" placeholder="Shkruaj vendimin..."></textarea>
+                                <div class="checkbox-list">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="vend_rivleresim" value="Rivlerësim">
+                                        <label for="vend_rivleresim">Rivlerësim</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="vend_vertetim" value="Vërtetim i vendimit të AK">
+                                        <label for="vend_vertetim">Vërtetim i vendimit të AK</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="vend_korrigjim" value="Korrigjim i dosjes">
+                                        <label for="vend_korrigjim">Korrigjim i dosjes</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="vend_anulim" value="Anulim">
+                                        <label for="vend_anulim">Anulim</label>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label>Bashkëngjit Raportin (URL)</label>
-                                <input type="url" id="plt_raportFileUrl" placeholder="https://...">
+                                <label>Bashkëngjit Raportin</label>
+                                <input type="file" id="plt_raportFile" accept=".pdf,.doc,.docx">
+                                <small style="color: #6c757d; margin-top: 4px;">PDF ose Word</small>
                             </div>
                             
                             <div class="form-group">
-                                <label>Bashkëngjit Vendimin (URL)</label>
-                                <input type="url" id="plt_vendimFileUrl" placeholder="https://...">
+                                <label>Bashkëngjit Vendimin</label>
+                                <input type="file" id="plt_vendimFile" accept=".pdf,.doc,.docx">
+                                <small style="color: #6c757d; margin-top: 4px;">PDF ose Word</small>
                             </div>
                         </div>
                         
@@ -585,10 +658,14 @@
                             <th style="min-width: 130px;">Eksperti</th>
                             <th style="min-width: 80px;">Shqyrtimi (ditë)</th>
                             <th style="min-width: 150px;">Rekomandimi</th>
-                            <th style="min-width: 150px;">Vendimi</th>
                             <th style="min-width: 70px;">Seanca</th>
+                            <th style="min-width: 150px;">Vendimi</th>
                             <th style="min-width: 90px;">Raport</th>
                             <th style="min-width: 90px;">Vendimi</th>
+                            <th style="min-width: 90px;">Shuma Bruto</th>
+                            <th style="min-width: 90px;">Shuma Neto</th>
+                            <th style="min-width: 90px;">Lënda Përsëritur</th>
+                            <th style="min-width: 100px;">Autorizimi</th>
                             <th style="min-width: 130px;">Veprime</th>
                         </tr>
                     </thead>
@@ -597,7 +674,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: FATURIMI DHE PAGESAT -->
+        <!-- TAB 3: FATURIMI DHE PAGESAT -->
         <div id="faturimi" class="tab-content">
             <h2 style="margin-bottom: 20px; color: #667eea; font-size: 2em;">💰 Faturimi dhe Pagesat</h2>
             
@@ -703,14 +780,11 @@
         // ==================== TAB SWITCHING ====================
         
         function switchTab(name) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             
-            // Show selected tab
             document.getElementById(name).classList.add('active');
             
-            // Activate button
             const buttons = document.querySelectorAll('.tab');
             const tabNames = ['regjistrim', 'regjistri', 'faturimi'];
             const index = tabNames.indexOf(name);
@@ -718,9 +792,8 @@
                 buttons[index].classList.add('active');
             }
             
-            // Load data if needed
             if (name === 'regjistrim') {
-                loadEkspertizaSelect(); // Load dropdown in section 2
+                loadEkspertizaSelect();
             } else if (name === 'regjistri') {
                 loadRegjistri();
             } else if (name === 'faturimi') {
@@ -743,6 +816,43 @@
                 input.required = false;
                 input.value = '';
             }
+        }
+
+        function autoCalculateNeto() {
+            const bruto = document.getElementById('reg_shumaBruto').value;
+            const netoField = document.getElementById('reg_shumaNeto');
+            
+            if (bruto === '150.00') {
+                netoField.value = '128.25';
+            } else if (bruto === '120.00') {
+                netoField.value = '102.60';
+            } else {
+                netoField.value = '';
+            }
+        }
+
+        function getSelectedCheckboxes(prefix) {
+            const checkboxes = [];
+            document.querySelectorAll(`input[id^="${prefix}_"]:checked`).forEach(cb => {
+                checkboxes.push(cb.value);
+            });
+            return checkboxes.join(', ');
+        }
+
+        function setCheckboxes(prefix, values) {
+            // Clear all first
+            document.querySelectorAll(`input[id^="${prefix}_"]`).forEach(cb => {
+                cb.checked = false;
+            });
+            
+            // Set checked based on values
+            if (!values) return;
+            const valueArray = values.split(', ');
+            document.querySelectorAll(`input[id^="${prefix}_"]`).forEach(cb => {
+                if (valueArray.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
         }
 
         function formatDateForBackend(val) {
@@ -800,6 +910,30 @@
             }
         }
 
+        async function uploadFile(file, type) {
+            if (!file) return null;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', type);
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/upload`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    return data.url;
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+            }
+            return null;
+        }
+
         // ==================== DATA LOADING ====================
         
         async function loadAnkesa() {
@@ -818,7 +952,6 @@
             const select = document.getElementById('selectEkspertiza');
             select.innerHTML = '<option value="">-- Zgjidhni një ekspertizë të regjistruar --</option>';
             
-            // Show all ankesa for completion
             ankeset.forEach(a => {
                 const status = a.dataDorezimet ? '✅ Plotësuar' : '⏳ Në pritje';
                 const option = document.createElement('option');
@@ -843,16 +976,13 @@
             currentEditId = id;
             document.getElementById('plotesoFields').style.display = 'block';
             
-            // Load existing data if available
             document.getElementById('plt_dataDorezimet').value = parseDateToInput(ankesa.dataDorezimet) || '';
             document.getElementById('plt_shqyrtimiDite').value = ankesa.shqyrtimiDite || '';
             document.getElementById('plt_seanca').value = ankesa.seanca || '';
-            document.getElementById('plt_rekomandimi').value = ankesa.rekomandimi || '';
-            document.getElementById('plt_vendimi').value = ankesa.vendimi || '';
-            document.getElementById('plt_raportFileUrl').value = ankesa.raportFileUrl || '';
-            document.getElementById('plt_vendimFileUrl').value = ankesa.vendimFileUrl || '';
             
-            // Attach change listener for auto-calculation
+            setCheckboxes('rek', ankesa.rekomandimi);
+            setCheckboxes('vend', ankesa.vendimi);
+            
             document.getElementById('plt_dataDorezimet').addEventListener('change', calculateDays);
         }
 
@@ -861,7 +991,7 @@
             tbody.innerHTML = '';
             
             if (ankeset.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="17" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka të dhëna të regjistruara</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="21" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka të dhëna të regjistruara</td></tr>';
                 document.getElementById('totalRegjistri').textContent = '0';
                 return;
             }
@@ -880,14 +1010,18 @@
                     <td>${a.llojiAngazhimit}</td>
                     <td>${a.ekspertiShqyrtues || 'N/A'}</td>
                     <td style="text-align: center;">${a.shqyrtimiDite || '-'}</td>
-                    <td>${truncate(a.rekomandimi, 40)}</td>
-                    <td>${truncate(a.vendimi, 40)}</td>
+                    <td>${truncate(a.rekomandimi, 30)}</td>
                     <td>${a.seanca || '-'}</td>
-                    <td style="text-align: center;">${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄 Link</a>` : '-'}</td>
-                    <td style="text-align: center;">${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄 Link</a>` : '-'}</td>
+                    <td>${truncate(a.vendimi, 30)}</td>
+                    <td style="text-align: center;">${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄</a>` : '-'}</td>
+                    <td style="text-align: center;">${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄</a>` : '-'}</td>
+                    <td style="text-align: right;">${a.shumaBruto || '-'} €</td>
+                    <td style="text-align: right;"><strong>${a.shumaNeto || '-'} €</strong></td>
+                    <td>${a.lendaPerseritur || '-'}</td>
+                    <td style="text-align: center;">${a.autorizimFileUrl ? `<a href="${a.autorizimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄</a>` : '-'}</td>
                     <td class="actions">
-                        <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})" title="Shiko detajet">👁️ Shiko</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})" title="Fshi">🗑️ Fshi</button>
+                        <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})" title="Shiko detajet">👁️</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})" title="Fshi">🗑️</button>
                     </td>
                 `;
             });
@@ -899,7 +1033,6 @@
             const tbody = document.getElementById('faturimiTableBody');
             tbody.innerHTML = '';
             
-            // Only completed ekspertiza (with dorëzim date)
             const completed = ankeset.filter(a => a.dataDorezimet);
             
             if (completed.length === 0) {
@@ -925,7 +1058,7 @@
                     <td style="text-align: right;"><strong>${a.shumaNeto || '-'} €</strong></td>
                     <td><span class="status-badge status-${(a.statusiPageses || 'papaguar').toLowerCase()}">${a.statusiPageses || 'Papaguar'}</span></td>
                     <td class="actions">
-                        <button class="btn btn-warning btn-small" onclick="openFaturimModal(${a.id})" title="Menaxho faturimin">💰 Faturim</button>
+                        <button class="btn btn-warning btn-small" onclick="openFaturimModal(${a.id})" title="Menaxho faturimin">💰</button>
                     </td>
                 `;
             });
@@ -935,13 +1068,16 @@
 
         // ==================== FORM SUBMISSIONS ====================
         
-        // FORM 1: Regjistro të Dhënat
         document.getElementById('regjistrimForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const submitBtn = document.getElementById('reg_submitBtn');
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Duke ruajtur...';
+            
+            // Upload autorizim file if exists
+            const autorizimFile = document.getElementById('reg_autorizimFile').files[0];
+            const autorizimUrl = autorizimFile ? await uploadFile(autorizimFile, 'autorizim') : null;
             
             const data = {
                 nrProtokollit: document.getElementById('reg_nrProtokollit').value.trim(),
@@ -954,7 +1090,8 @@
                 ekspertiShqyrtues: document.getElementById('reg_ekspertiShqyrtues').value.trim(),
                 shumaBruto: document.getElementById('reg_shumaBruto').value,
                 shumaNeto: document.getElementById('reg_shumaNeto').value,
-                // NOT required - will be filled later
+                lendaPerseritur: document.getElementById('reg_lendaPerseritur').value || null,
+                autorizimFileUrl: autorizimUrl,
                 dataDorezimet: null,
                 seanca: null,
                 rekomandimi: null,
@@ -974,9 +1111,10 @@
                 });
 
                 if (res.ok) {
-                    showAlert('formAlert1', '✅ Ekspertiza u ruajt me sukses! Mund ta plotësoni më vonë në "Plotëso të Dhënat".', 'success');
+                    showAlert('formAlert1', '✅ Ekspertiza u ruajt me sukses!', 'success');
                     resetRegjistrimForm();
                     await loadAnkesa();
+                    loadEkspertizaSelect();
                 } else {
                     const error = await res.json();
                     showAlert('formAlert1', '❌ Gabim: ' + (error.error || 'Gabim i panjohur'), 'error');
@@ -989,7 +1127,6 @@
             }
         });
 
-        // FORM 2: Plotëso të Dhënat
         document.getElementById('plotesoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1002,10 +1139,16 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Duke përditësuar...';
             
+            // Upload files if exist
+            const raportFile = document.getElementById('plt_raportFile').files[0];
+            const vendimFile = document.getElementById('plt_vendimFile').files[0];
+            
+            const raportUrl = raportFile ? await uploadFile(raportFile, 'raport') : null;
+            const vendimUrl = vendimFile ? await uploadFile(vendimFile, 'vendim') : null;
+            
             const ankesa = ankeset.find(a => a.id === currentEditId);
             
             const data = {
-                // Keep existing basic data
                 nrProtokollit: ankesa.nrProtokollit,
                 nrProkurimit: ankesa.nrProkurimit,
                 titulliAktivitetit: ankesa.titulliAktivitetit,
@@ -1016,15 +1159,15 @@
                 ekspertiShqyrtues: ankesa.ekspertiShqyrtues,
                 shumaBruto: ankesa.shumaBruto,
                 shumaNeto: ankesa.shumaNeto,
-                // Update completion data
+                lendaPerseritur: ankesa.lendaPerseritur,
+                autorizimFileUrl: ankesa.autorizimFileUrl,
                 dataDorezimet: formatDateForBackend(document.getElementById('plt_dataDorezimet').value),
                 shqyrtimiDite: document.getElementById('plt_shqyrtimiDite').value || null,
                 seanca: document.getElementById('plt_seanca').value || null,
-                rekomandimi: document.getElementById('plt_rekomandimi').value.trim() || null,
-                vendimi: document.getElementById('plt_vendimi').value.trim() || null,
-                raportFileUrl: document.getElementById('plt_raportFileUrl').value.trim() || null,
-                vendimFileUrl: document.getElementById('plt_vendimFileUrl').value.trim() || null,
-                // Keep existing billing data if any
+                rekomandimi: getSelectedCheckboxes('rek') || null,
+                vendimi: getSelectedCheckboxes('vend') || null,
+                raportFileUrl: raportUrl || ankesa.raportFileUrl,
+                vendimFileUrl: vendimUrl || ankesa.vendimFileUrl,
                 nrFatures: ankesa.nrFatures,
                 statusiPageses: ankesa.statusiPageses || 'Papaguar'
             };
@@ -1054,7 +1197,6 @@
             }
         });
 
-        // FORM 3: Faturim
         document.getElementById('faturimForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1064,9 +1206,7 @@
             if (!ankesa) return;
             
             const data = {
-                // Keep all existing data
                 ...ankesa,
-                // Update billing fields
                 nrFatures: document.getElementById('modal_nrFatures').value.trim(),
                 statusiPageses: document.getElementById('modal_statusiPageses').value
             };
@@ -1105,6 +1245,8 @@
             document.getElementById('plotesoForm').reset();
             document.getElementById('formAlert2').innerHTML = '';
             document.getElementById('plotesoFields').style.display = 'none';
+            setCheckboxes('rek', '');
+            setCheckboxes('vend', '');
             currentEditId = null;
         }
 
@@ -1161,24 +1303,20 @@
                     <div class="detail-value">${ankesa.rekomandimi || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Vendimi</div>
-                    <div class="detail-value">${ankesa.vendimi || '-'}</div>
-                </div>
-                <div class="detail-row">
                     <div class="detail-label">Seanca</div>
                     <div class="detail-value">${ankesa.seanca || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Raport (Link)</div>
-                    <div class="detail-value">${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" style="color: #667eea;">${ankesa.raportFileUrl}</a>` : '-'}</div>
+                    <div class="detail-label">Vendimi</div>
+                    <div class="detail-value">${ankesa.vendimi || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Vendimi (Link)</div>
-                    <div class="detail-value">${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" style="color: #667eea;">${ankesa.vendimFileUrl}</a>` : '-'}</div>
+                    <div class="detail-label">Raport</div>
+                    <div class="detail-value">${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" style="color: #667eea;">Shkarko 📄</a>` : '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Nr. i Faturës</div>
-                    <div class="detail-value">${ankesa.nrFatures || '-'}</div>
+                    <div class="detail-label">Vendimi (File)</div>
+                    <div class="detail-value">${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" style="color: #667eea;">Shkarko 📄</a>` : '-'}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Shuma Bruto</div>
@@ -1186,7 +1324,19 @@
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Shuma Neto</div>
-                    <div class="detail-value">${ankesa.shumaNeto || '-'} €</div>
+                    <div class="detail-value"><strong>${ankesa.shumaNeto || '-'} €</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Lënda e Përsëritur</div>
+                    <div class="detail-value">${ankesa.lendaPerseritur || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Autorizimi</div>
+                    <div class="detail-value">${ankesa.autorizimFileUrl ? `<a href="${ankesa.autorizimFileUrl}" target="_blank" style="color: #667eea;">Shkarko 📄</a>` : '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Nr. i Faturës</div>
+                    <div class="detail-value">${ankesa.nrFatures || '-'}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Statusi i Pagesës</div>
@@ -1254,7 +1404,6 @@
         }
 
         function exportFaturimi() {
-            // You can implement separate export for billing
             alert('Export faturimi - në zhvillim');
         }
 
