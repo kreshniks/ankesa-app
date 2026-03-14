@@ -3,277 +3,696 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regjistri i Ekspertizave</title>
+    <title>Regjistri i Ekspertizave - Sistem Profesional</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+        
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            overflow: hidden; 
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
         .header-content { text-align: center; flex: 1; }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .logout-btn { padding: 10px 20px; background: rgba(255,255,255,0.2); border: 2px solid white; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .logout-btn:hover { background: white; color: #667eea; }
-        .tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #dee2e6; }
-        .tab { flex: 1; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; font-weight: 600; color: #495057; border: none; background: none; font-size: 16px; }
-        .tab.active { background: white; color: #667eea; border-bottom: 3px solid #667eea; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .header p { font-size: 1.1em; opacity: 0.95; }
+        
+        .logout-btn { 
+            padding: 10px 20px; 
+            background: rgba(255,255,255,0.2); 
+            border: 2px solid white; 
+            color: white; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.3s; 
+        }
+        .logout-btn:hover { background: white; color: #667eea; transform: translateY(-2px); }
+        
+        /* TABS */
+        .tabs { 
+            display: flex; 
+            background: #f8f9fa; 
+            border-bottom: 2px solid #dee2e6; 
+            overflow-x: auto;
+        }
+        
+        .tab { 
+            flex: 1; 
+            min-width: 200px;
+            padding: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-weight: 600; 
+            color: #495057; 
+            border: none; 
+            background: none; 
+            font-size: 15px; 
+            white-space: nowrap;
+        }
+        
+        .tab.active { 
+            background: white; 
+            color: #667eea; 
+            border-bottom: 3px solid #667eea; 
+        }
+        
+        .tab:hover:not(.active) { background: #e9ecef; }
+        
         .tab-content { display: none; padding: 30px; }
         .tab-content.active { display: block; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        /* SECTIONS */
+        .section { 
+            background: #f8f9fa; 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            border-left: 4px solid #667eea; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .section-title { 
+            font-size: 1.5em; 
+            color: #667eea; 
+            margin-bottom: 20px; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        
+        .section-number { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.2em; 
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* FORMS */
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            margin-bottom: 20px; 
+        }
+        
         .form-group { display: flex; flex-direction: column; }
         .form-group.full-width { grid-column: 1 / -1; }
-        label { font-weight: 600; margin-bottom: 8px; color: #495057; font-size: 14px; }
-        input, textarea, select { padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; }
-        textarea { resize: vertical; min-height: 80px; }
+        
+        label { 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: #495057; 
+            font-size: 14px; 
+        }
+        
+        input, textarea, select { 
+            padding: 12px; 
+            border: 2px solid #dee2e6; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); 
+        }
+        
+        textarea { resize: vertical; min-height: 100px; }
+        
         .conditional-field { display: none; }
         .conditional-field.show { display: flex; }
         
-        .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-right: 10px; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-small { padding: 6px 12px; font-size: 12px; }
+        /* BUTTONS */
+        .btn { 
+            padding: 12px 30px; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            margin-right: 10px; 
+        }
         
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; }
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); 
+        }
+        
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; transform: translateY(-2px); }
+        
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        
+        .btn-small { padding: 6px 14px; font-size: 12px; }
+        
+        /* TABLES */
+        .table-container { overflow-x: auto; margin-top: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            font-size: 12px; 
+        }
+        
         th { 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             color: white; 
-            padding: 12px 8px; 
+            padding: 14px 10px; 
             text-align: left; 
             position: sticky; 
             top: 0;
             font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             white-space: normal;
             word-wrap: break-word;
             min-width: 80px;
+            z-index: 10;
         }
+        
         td { 
-            padding: 10px 8px; 
+            padding: 12px 10px; 
             border-bottom: 1px solid #dee2e6;
             white-space: normal;
             word-wrap: break-word;
             max-width: 200px;
         }
+        
         tr:hover { background: #f8f9fa; }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        tr:nth-child(even) { background: #fafbfc; }
+        tr:nth-child(even):hover { background: #f0f2f5; }
+        
+        .status-badge { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            display: inline-block; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
         .status-paguar { background: #d4edda; color: #155724; }
         .status-papaguar { background: #f8d7da; color: #721c24; }
         .status-pjesërisht { background: #fff3cd; color: #856404; }
+        
         .actions { display: flex; gap: 5px; flex-wrap: wrap; }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        /* MODAL */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(4px);
+        }
+        
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 15px; padding: 30px; max-width: 900px; max-height: 90vh; overflow-y: auto; width: 90%; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h2 { color: #667eea; }
-        .close-modal { font-size: 28px; cursor: pointer; color: #6c757d; }
-        .detail-row { padding: 12px 0; border-bottom: 1px solid #eee; }
-        .detail-label { font-weight: 600; color: #495057; margin-bottom: 5px; }
-        .detail-value { color: #212529; }
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .modal-content { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 35px; 
+            max-width: 900px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            width: 90%; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+            padding-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .modal-header h2 { 
+            color: #667eea; 
+            font-size: 1.8em;
+        }
+        
+        .close-modal { 
+            font-size: 32px; 
+            cursor: pointer; 
+            color: #6c757d; 
+            transition: all 0.3s;
+            line-height: 1;
+        }
+        
+        .close-modal:hover { color: #dc3545; transform: rotate(90deg); }
+        
+        .detail-row { 
+            padding: 14px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        
+        .detail-label { 
+            font-weight: 700; 
+            color: #667eea; 
+            margin-bottom: 6px; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value { 
+            color: #212529; 
+            font-size: 15px;
+        }
+        
+        /* ALERTS */
+        .alert { 
+            padding: 16px 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .alert-success { 
+            background: #d4edda; 
+            color: #155724; 
+            border-color: #28a745; 
+        }
+        
+        .alert-error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-color: #dc3545; 
+        }
+        
+        .alert-info { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+            border-color: #17a2b8; 
+        }
+        
+        /* INFO BOX */
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box strong {
+            color: #1976D2;
+        }
 
-        @media (max-width: 1024px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+        /* RESPONSIVE */
+        @media (max-width: 1024px) { 
+            .form-grid { grid-template-columns: 1fr 1fr; } 
+        }
+        
         @media (max-width: 768px) { 
             .form-grid { grid-template-columns: 1fr; }
             th, td { font-size: 10px; padding: 8px 4px; }
+            .header h1 { font-size: 1.8em; }
+            .tabs { flex-wrap: nowrap; overflow-x: scroll; }
+            .tab { min-width: 150px; font-size: 13px; padding: 15px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- HEADER -->
         <div class="header">
             <div style="width: 120px;"></div>
             <div class="header-content">
                 <h1>📋 Regjistri i Ekspertizave</h1>
-                <p>Sistem profesional për regjistrim dhe raportim të ekspertizave</p>
+                <p>Sistem Profesional për Menaxhim të Plotë të Ekspertizave</p>
             </div>
             <button class="logout-btn" onclick="logout()">🚪 Dil</button>
         </div>
 
+        <!-- TABS NAVIGATION -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('regjistrim', event)">➕ Regjistro Ekspertizë</button>
-            <button class="tab" onclick="switchTab('lista', event)">📊 Lista e Ekspertizave</button>
+            <button class="tab active" onclick="switchTab('regjistrim')">➕ Regjistro Ekspertizë</button>
+            <button class="tab" onclick="switchTab('regjistri')">📊 Regjistri i Ekspertizave</button>
+            <button class="tab" onclick="switchTab('faturimi')">💰 Faturimi dhe Pagesat</button>
         </div>
 
+        <!-- TAB 1: REGJISTRO EKSPERTIZË (2 NËN-SEKSIONE) -->
         <div id="regjistrim" class="tab-content active">
-            <h2 style="margin-bottom: 20px;">Regjistro/Edito Ekspertizë</h2>
-            <div id="formAlert"></div>
-            <form id="ankeseForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nr. i Protokollit *</label>
-                        <input type="text" id="nrProtokollit" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Numri i Prokurimit</label>
-                        <input type="text" id="nr_prokurimit">
-                    </div>
-                    <div class="form-group">
-                        <label>Titulli i Aktivitetit *</label>
-                        <input type="text" id="titulliAktivitetit" required>
-                    </div>
+            
+            <!-- NËN-SEKSIONI 1: Regjistro të Dhënat për Ekspertizë -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="section-number">1</span>
+                    Regjistro të Dhënat për Ekspertizë
+                </div>
+                
+                <div class="info-box">
+                    <strong>ℹ️ Informacion:</strong> Regjistro të dhënat bazë të ekspertizës. Të dhënat e mëposhtme mund të plotësohen më vonë në seksionin "Plotëso të Dhënat".
+                </div>
+                
+                <div id="formAlert1"></div>
+                
+                <form id="regjistrimForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nr. i Protokollit *</label>
+                            <input type="text" id="reg_nrProtokollit" required placeholder="P-2024-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nr. i Prokurimit</label>
+                            <input type="text" id="reg_nrProkurimit" placeholder="PR-2024-123">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Data e Autorizimit</label>
+                            <input type="date" id="reg_dataAutorizimit">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Autoriteti Kontraktues *</label>
-                        <input type="text" id="autoriteti" required>
-                    </div>
-                    <div class="form-group">
-                        <label>OE Ankues *</label>
-                        <input type="text" id="oeAnkues" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data e Autorizimit</label>
-                        <input type="date" id="dataAutorizimit">
-                    </div>
+                        <div class="form-group full-width">
+                            <label>Titulli i Aktivitetit *</label>
+                            <input type="text" id="reg_titulliAktivitetit" required placeholder="Shërbime për...">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Lloji i Angazhimit *</label>
-                        <select id="llojiAngazhimit" required onchange="toggleEkspertiField()">
-                            <option value="">-- Zgjidhni --</option>
-                            <option value="Ekspert Shqyrtues">Ekspert Shqyrtues</option>
-                            <option value="Ekspert Teknik">Ekspert Teknik</option>
-                            <option value="Superekspertizë">Superekspertizë</option>
+                        <div class="form-group">
+                            <label>Autoriteti Kontraktues *</label>
+                            <input type="text" id="reg_autoriteti" required placeholder="Emri i autoritetit">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>OE Ankues *</label>
+                            <input type="text" id="reg_oeAnkues" required placeholder="Emri i OE">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Lloji i Angazhimit *</label>
+                            <select id="reg_llojiAngazhimit" required onchange="toggleEkspertiField()">
+                                <option value="">-- Zgjidhni --</option>
+                                <option value="Ekspert Shqyrtues">Ekspert Shqyrtues</option>
+                                <option value="Ekspert Teknik">Ekspert Teknik</option>
+                                <option value="Superekspertizë">Superekspertizë</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group conditional-field" id="reg_ekspertiShqyrtuesField">
+                            <label>Eksperti Shqyrtues *</label>
+                            <input type="text" id="reg_ekspertiShqyrtues" placeholder="Emri i ekspertit">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Shuma Bruto (€) *</label>
+                            <select id="reg_shumaBruto" required>
+                                <option value="">-- Zgjidhni --</option>
+                                <option value="150.00">150,00 €</option>
+                                <option value="120.00">120,00 €</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Shuma Neto (€) *</label>
+                            <select id="reg_shumaNeto" required>
+                                <option value="">-- Zgjidhni --</option>
+                                <option value="128.25">128,25 €</option>
+                                <option value="102.60">102,60 €</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary" id="reg_submitBtn">💾 Ruaj të Dhënat Bazë</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetRegjistrimForm()">🔄 Pastro Formën</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- NËN-SEKSIONI 2: Plotëso të Dhënat për Ekspertizë -->
+            <div class="section" style="margin-top: 30px;">
+                <div class="section-title">
+                    <span class="section-number">2</span>
+                    Plotëso të Dhënat për Ekspertizë
+                </div>
+                
+                <div class="info-box">
+                    <strong>ℹ️ Informacion:</strong> Zgjedh një ekspertizë të regjistruar dhe plotëso të dhënat shtesë kur të jenë gati.
+                </div>
+                
+                <div id="formAlert2"></div>
+                
+                <form id="plotesoForm">
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label style="font-size: 16px; color: #667eea;">Zgjedh Ekspertizën për ta Plotësuar *</label>
+                        <select id="selectEkspertiza" required onchange="loadEkspertizaDetails()" style="font-size: 15px; padding: 14px;">
+                            <option value="">-- Zgjidhni një ekspertizë të regjistruar --</option>
                         </select>
                     </div>
-                    <div class="form-group conditional-field" id="ekspertiShqyrtuesField">
-                        <label>Eksperti Shqyrtues *</label>
-                        <input type="text" id="ekspertiShqyrtues">
-                    </div>
-                    <div class="form-group">
-                        <label>Dorëzuar me datë *</label>
-                        <input type="date" id="dataDorezimet" required>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Shuma Bruto (€) *</label>
-                        <select id="shumaBruto" required>
-                            <option value="">-- Zgjidhni --</option>
-                            <option value="150.00">150,00 €</option>
-                            <option value="120.00">120,00 €</option>
-                        </select>
+                    <div id="plotesoFields" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Data e Dorëzimit *</label>
+                                <input type="date" id="plt_dataDorezimet" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Shqyrtimi (ditë)</label>
+                                <input type="number" id="plt_shqyrtimiDite" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                                <small style="color: #6c757d; margin-top: 4px;">Llogaritet automatikisht</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Seanca</label>
+                                <select id="plt_seanca">
+                                    <option value="">-- Zgjidhni --</option>
+                                    <option value="Po">Po</option>
+                                    <option value="Jo">Jo</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Rekomandimi</label>
+                                <textarea id="plt_rekomandimi" placeholder="Shkruaj rekomandimin..."></textarea>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>Vendimi</label>
+                                <textarea id="plt_vendimi" placeholder="Shkruaj vendimin..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Bashkëngjit Raportin (URL)</label>
+                                <input type="url" id="plt_raportFileUrl" placeholder="https://...">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Bashkëngjit Vendimin (URL)</label>
+                                <input type="url" id="plt_vendimFileUrl" placeholder="https://...">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 25px;">
+                            <button type="submit" class="btn btn-success" id="plt_submitBtn">✅ Përditëso Ekspertizën</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPlotesoForm()">🔄 Pastro</button>
+                        </div>
                     </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: REGJISTRI I EKSPERTIZAVE -->
+        <div id="regjistri" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #667eea; font-size: 2em;">📊 Regjistri i Ekspertizave</h2>
+            
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel</button>
+                <span style="color: #6c757d; margin-left: 10px;">Total: <strong id="totalRegjistri">0</strong> ekspertiza</span>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width: 40px;">Nr</th>
+                            <th style="min-width: 100px;">Nr. Protokolli</th>
+                            <th style="min-width: 100px;">Nr. Prokurimit</th>
+                            <th style="min-width: 200px;">Titulli</th>
+                            <th style="min-width: 140px;">Autoriteti</th>
+                            <th style="min-width: 110px;">OE Ankues</th>
+                            <th style="min-width: 100px;">Data Autorizimit</th>
+                            <th style="min-width: 100px;">Data Dorëzimit</th>
+                            <th style="min-width: 120px;">Lloji</th>
+                            <th style="min-width: 130px;">Eksperti</th>
+                            <th style="min-width: 80px;">Shqyrtimi (ditë)</th>
+                            <th style="min-width: 150px;">Rekomandimi</th>
+                            <th style="min-width: 150px;">Vendimi</th>
+                            <th style="min-width: 70px;">Seanca</th>
+                            <th style="min-width: 90px;">Raport</th>
+                            <th style="min-width: 90px;">Vendimi</th>
+                            <th style="min-width: 130px;">Veprime</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regjstriTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: FATURIMI DHE PAGESAT -->
+        <div id="faturimi" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #667eea; font-size: 2em;">💰 Faturimi dhe Pagesat</h2>
+            
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-success" onclick="exportFaturimi()">📥 Eksporto Faturimin</button>
+                <span style="color: #6c757d; margin-left: 10px;">Total faturuar: <strong id="totalFaturimi">0</strong> €</span>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width: 40px;">Nr</th>
+                            <th style="min-width: 110px;">Nr. Protokolli</th>
+                            <th style="min-width: 200px;">Titulli</th>
+                            <th style="min-width: 100px;">Data Dorëzimit</th>
+                            <th style="min-width: 110px;">Nr. Faturës</th>
+                            <th style="min-width: 90px;">Shuma Bruto</th>
+                            <th style="min-width: 90px;">Shuma Neto</th>
+                            <th style="min-width: 110px;">Statusi Pagesës</th>
+                            <th style="min-width: 120px;">Veprime</th>
+                        </tr>
+                    </thead>
+                    <tbody id="faturimiTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SHIKO DETAJE -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Detajet e Plotë të Ekspertizës</h2>
+                <span class="close-modal" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+            <div style="margin-top: 25px;">
+                <button class="btn btn-secondary" onclick="closeDetailModal()">Mbyll</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: MENAXHO FATURIMIN -->
+    <div id="faturimModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>💰 Menaxho Faturimin</h2>
+                <span class="close-modal" onclick="closeFaturimModal()">&times;</span>
+            </div>
+            
+            <div id="faturimInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <form id="faturimForm">
+                <div class="form-grid" style="grid-template-columns: 1fr;">
                     <div class="form-group">
-                        <label>Shuma Neto (€) *</label>
-                        <select id="shumaNeto" required>
-                            <option value="">-- Zgjidhni --</option>
-                            <option value="128.25">128,25 €</option>
-                            <option value="102.60">102,60 €</option>
-                        </select>
+                        <label>Nr. i Faturës *</label>
+                        <input type="text" id="modal_nrFatures" required placeholder="F-2024-001">
                     </div>
+                    
                     <div class="form-group">
                         <label>Statusi i Pagesës *</label>
-                        <select id="statusiPageses" required>
+                        <select id="modal_statusiPageses" required>
                             <option value="">-- Zgjidhni --</option>
                             <option value="Paguar">Paguar</option>
                             <option value="Papaguar">Papaguar</option>
                             <option value="Pjesërisht">Pjesërisht</option>
                         </select>
                     </div>
-
-                    <div class="form-group">
-                        <label>Seanca</label>
-                        <select id="seanca">
-                            <option value="">-- Zgjidhni --</option>
-                            <option value="Po">Po</option>
-                            <option value="Jo">Jo</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Rekomandimi</label>
-                        <textarea id="rekomandimi"></textarea>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Vendimi</label>
-                        <textarea id="vendimi"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Bashkëngjit Raportin (URL)</label>
-                        <input type="text" id="raportFileUrl" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>Bashkëngjit Vendimin (URL)</label>
-                        <input type="text" id="vendimFileUrl" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>Nr. i Faturës</label>
-                        <input type="text" id="nrFatures">
-                    </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">💾 Ruaj Ekspertizën</button>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">🔄 Pastro Formën</button>
+                
+                <div style="margin-top: 25px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">💾 Ruaj Faturimin</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeFaturimModal()">Anulo</button>
                 </div>
             </form>
-        </div>
-
-        <div id="lista" class="tab-content">
-            <h2 style="margin-bottom: 20px;">Lista e të gjitha Ekspertizave</h2>
-            <div style="margin-bottom: 20px;">
-                <button class="btn btn-success" onclick="exportToExcel()">📥 Eksporto në Excel</button>
-            </div>
-            <div class="table-container">
-                <table id="ankesetTable">
-                    <thead>
-                        <tr>
-                            <th style="min-width: 40px;">Nr</th>
-                            <th style="min-width: 100px;">Nr. Protokolli</th>
-                            <th style="min-width: 100px;">Nr. Prokurimit</th>
-                            <th style="min-width: 180px;">Titulli i Aktivitetit</th>
-                            <th style="min-width: 120px;">Autoriteti Kontraktues</th>
-                            <th style="min-width: 100px;">OE Ankues</th>
-                            <th style="min-width: 90px;">Data Autorizimit</th>
-                            <th style="min-width: 90px;">Data Dorëzimit</th>
-                            <th style="min-width: 100px;">Lloji Angazhimit</th>
-                            <th style="min-width: 120px;">Eksperti Shqyrtues</th>
-                            <th style="min-width: 70px;">Shqyrtimi (ditë)</th>
-                            <th style="min-width: 150px;">Rekomandimi</th>
-                            <th style="min-width: 150px;">Vendimi</th>
-                            <th style="min-width: 70px;">Seanca</th>
-                            <th style="min-width: 90px;">Raport</th>
-                            <th style="min-width: 90px;">Vendimi (file)</th>
-                            <th style="min-width: 90px;">Nr. Faturës</th>
-                            <th style="min-width: 80px;">Shuma Bruto</th>
-                            <th style="min-width: 80px;">Shuma Neto</th>
-                            <th style="min-width: 90px;">Statusi Pagesës</th>
-                            <th style="min-width: 120px;">Veprime</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ankesetTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal për shfaqjen e detajeve -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📋 Detajet e Plotë të Ekspertizës</h2>
-                <span class="close-modal" onclick="closeModal()">&times;</span>
-            </div>
-            <div id="modalBody"></div>
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="closeModal()">Mbyll</button>
-            </div>
         </div>
     </div>
 
     <script>
         const API_BASE = window.location.origin;
         let ankeset = [];
-        let editingId = null;
+        let currentEditId = null;
+        let currentFaturimId = null;
 
+        // ==================== AUTHENTICATION ====================
+        
         async function checkAuth() {
-            const res = await fetch(`${API_BASE}/api/check-auth`, { credentials: 'include' });
-            const data = await res.json();
-            if (!data.authenticated) window.location.href = '/';
+            try {
+                const res = await fetch(`${API_BASE}/api/check-auth`, { credentials: 'include' });
+                const data = await res.json();
+                if (!data.authenticated) window.location.href = '/';
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
         }
 
         async function logout() {
@@ -281,10 +700,41 @@
             window.location.href = '/';
         }
 
+        // ==================== TAB SWITCHING ====================
+        
+        function switchTab(name) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(name).classList.add('active');
+            
+            // Activate button
+            const buttons = document.querySelectorAll('.tab');
+            const tabNames = ['regjistrim', 'regjistri', 'faturimi'];
+            const index = tabNames.indexOf(name);
+            if (index !== -1 && buttons[index]) {
+                buttons[index].classList.add('active');
+            }
+            
+            // Load data if needed
+            if (name === 'regjistrim') {
+                loadEkspertizaSelect(); // Load dropdown in section 2
+            } else if (name === 'regjistri') {
+                loadRegjistri();
+            } else if (name === 'faturimi') {
+                loadFaturimi();
+            }
+        }
+
+        // ==================== UTILITIES ====================
+        
         function toggleEkspertiField() {
-            const lloji = document.getElementById('llojiAngazhimit').value;
-            const field = document.getElementById('ekspertiShqyrtuesField');
-            const input = document.getElementById('ekspertiShqyrtues');
+            const lloji = document.getElementById('reg_llojiAngazhimit').value;
+            const field = document.getElementById('reg_ekspertiShqyrtuesField');
+            const input = document.getElementById('reg_ekspertiShqyrtues');
+            
             if (lloji === 'Ekspert Teknik') {
                 field.classList.add('show');
                 input.required = true;
@@ -295,52 +745,24 @@
             }
         }
 
-        async function loadAnkesa() {
-            try {
-                const res = await fetch(`${API_BASE}/api/ankesa`, { credentials: 'include' });
-                console.log('API Response:', res);
-                if (!res.ok) {
-                    console.error('API request failed with status:', res.status);
-                    return;
-                }
-                ankeset = await res.json();
-                console.log('Ankesat data:', ankeset);
-                const tbody = document.getElementById('ankesetTableBody');
-                tbody.innerHTML = '';
-                
-                ankeset.forEach((a, i) => {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td>${i + 1}</td>
-                        <td>${a.nrProtokollit}</td>
-                        <td>${a.nrProkurimit || '-'}</td>
-                        <td>${a.titulliAktivitetit}</td>
-                        <td>${a.autoriteti}</td>
-                        <td>${a.oeAnkues}</td>
-                        <td>${a.dataAutorizimit || '-'}</td>
-                        <td>${a.dataDorezimet}</td>
-                        <td>${a.llojiAngazhimit}</td>
-                        <td>${a.ekspertiShqyrtues || 'N/A'}</td>
-                        <td>${a.shqyrtimiDite || '-'}</td>
-                        <td>${truncate(a.rekomandimi, 50)}</td>
-                        <td>${truncate(a.vendimi, 50)}</td>
-                        <td>${a.seanca || '-'}</td>
-                        <td>${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
-                        <td>${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank">📄 Link</a>` : '-'}</td>
-                        <td>${a.nrFatures || '-'}</td>
-                        <td>${a.shumaBruto || '-'} €</td>
-                        <td>${a.shumaNeto || '-'} €</td>
-                        <td><span class="status-badge status-${a.statusiPageses.toLowerCase()}">${a.statusiPageses}</span></td>
-                        <td class="actions">
-                            <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})">👁️ Shiko</button>
-                            <button class="btn btn-warning btn-small" onclick="editAnkesa(${a.id})">✏️ Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})">🗑️ Fshi</button>
-                        </td>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error in loadAnkesa:', error);
-            }
+        function formatDateForBackend(val) {
+            if (!val) return null;
+            const d = new Date(val);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        function parseDateFromBackend(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return null;
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+
+        function parseDateToInput(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return '';
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
 
         function truncate(text, length) {
@@ -348,6 +770,346 @@
             return text.length > length ? text.substring(0, length) + '...' : text;
         }
 
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function calculateDays() {
+            const id = currentEditId;
+            if (!id) return;
+            
+            const ankesa = ankeset.find(a => a.id === id);
+            if (!ankesa || !ankesa.dataAutorizimit) return;
+            
+            const dataDor = document.getElementById('plt_dataDorezimet').value;
+            if (!dataDor) {
+                document.getElementById('plt_shqyrtimiDite').value = '';
+                return;
+            }
+            
+            const d1 = parseDateFromBackend(ankesa.dataAutorizimit);
+            const d2 = new Date(dataDor);
+            
+            if (d1 && d2) {
+                const days = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+                document.getElementById('plt_shqyrtimiDite').value = days >= 0 ? days : 0;
+            }
+        }
+
+        // ==================== DATA LOADING ====================
+        
+        async function loadAnkesa() {
+            try {
+                const res = await fetch(`${API_BASE}/api/ankesa`, { credentials: 'include' });
+                if (res.ok) {
+                    ankeset = await res.json();
+                    console.log('Loaded ankesa:', ankeset.length);
+                }
+            } catch (error) {
+                console.error('Error loading ankesa:', error);
+            }
+        }
+
+        function loadEkspertizaSelect() {
+            const select = document.getElementById('selectEkspertiza');
+            select.innerHTML = '<option value="">-- Zgjidhni një ekspertizë të regjistruar --</option>';
+            
+            // Show all ankesa for completion
+            ankeset.forEach(a => {
+                const status = a.dataDorezimet ? '✅ Plotësuar' : '⏳ Në pritje';
+                const option = document.createElement('option');
+                option.value = a.id;
+                option.textContent = `${a.nrProtokollit} - ${truncate(a.titulliAktivitetit, 40)} [${status}]`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadEkspertizaDetails() {
+            const id = parseInt(document.getElementById('selectEkspertiza').value);
+            
+            if (!id) {
+                document.getElementById('plotesoFields').style.display = 'none';
+                currentEditId = null;
+                return;
+            }
+
+            const ankesa = ankeset.find(a => a.id === id);
+            if (!ankesa) return;
+
+            currentEditId = id;
+            document.getElementById('plotesoFields').style.display = 'block';
+            
+            // Load existing data if available
+            document.getElementById('plt_dataDorezimet').value = parseDateToInput(ankesa.dataDorezimet) || '';
+            document.getElementById('plt_shqyrtimiDite').value = ankesa.shqyrtimiDite || '';
+            document.getElementById('plt_seanca').value = ankesa.seanca || '';
+            document.getElementById('plt_rekomandimi').value = ankesa.rekomandimi || '';
+            document.getElementById('plt_vendimi').value = ankesa.vendimi || '';
+            document.getElementById('plt_raportFileUrl').value = ankesa.raportFileUrl || '';
+            document.getElementById('plt_vendimFileUrl').value = ankesa.vendimFileUrl || '';
+            
+            // Attach change listener for auto-calculation
+            document.getElementById('plt_dataDorezimet').addEventListener('change', calculateDays);
+        }
+
+        function loadRegjistri() {
+            const tbody = document.getElementById('regjstriTableBody');
+            tbody.innerHTML = '';
+            
+            if (ankeset.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="17" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka të dhëna të regjistruara</td></tr>';
+                document.getElementById('totalRegjistri').textContent = '0';
+                return;
+            }
+            
+            ankeset.forEach((a, i) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td><strong>${a.nrProtokollit}</strong></td>
+                    <td>${a.nrProkurimit || '-'}</td>
+                    <td>${a.titulliAktivitetit}</td>
+                    <td>${a.autoriteti}</td>
+                    <td>${a.oeAnkues}</td>
+                    <td>${a.dataAutorizimit || '-'}</td>
+                    <td>${a.dataDorezimet || '<span style="color: orange; font-weight: 600;">⏳ Në pritje</span>'}</td>
+                    <td>${a.llojiAngazhimit}</td>
+                    <td>${a.ekspertiShqyrtues || 'N/A'}</td>
+                    <td style="text-align: center;">${a.shqyrtimiDite || '-'}</td>
+                    <td>${truncate(a.rekomandimi, 40)}</td>
+                    <td>${truncate(a.vendimi, 40)}</td>
+                    <td>${a.seanca || '-'}</td>
+                    <td style="text-align: center;">${a.raportFileUrl ? `<a href="${a.raportFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄 Link</a>` : '-'}</td>
+                    <td style="text-align: center;">${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄 Link</a>` : '-'}</td>
+                    <td class="actions">
+                        <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})" title="Shiko detajet">👁️ Shiko</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})" title="Fshi">🗑️ Fshi</button>
+                    </td>
+                `;
+            });
+            
+            document.getElementById('totalRegjistri').textContent = ankeset.length;
+        }
+
+        function loadFaturimi() {
+            const tbody = document.getElementById('faturimiTableBody');
+            tbody.innerHTML = '';
+            
+            // Only completed ekspertiza (with dorëzim date)
+            const completed = ankeset.filter(a => a.dataDorezimet);
+            
+            if (completed.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka ekspertiza të plotësuara për faturim</td></tr>';
+                document.getElementById('totalFaturimi').textContent = '0.00';
+                return;
+            }
+            
+            let totalNeto = 0;
+            
+            completed.forEach((a, i) => {
+                const row = tbody.insertRow();
+                const netoValue = parseFloat(a.shumaNeto) || 0;
+                totalNeto += netoValue;
+                
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td><strong>${a.nrProtokollit}</strong></td>
+                    <td>${truncate(a.titulliAktivitetit, 45)}</td>
+                    <td>${a.dataDorezimet}</td>
+                    <td>${a.nrFatures || '<span style="color: orange; font-weight: 600;">⏳ Pending</span>'}</td>
+                    <td style="text-align: right;">${a.shumaBruto || '-'} €</td>
+                    <td style="text-align: right;"><strong>${a.shumaNeto || '-'} €</strong></td>
+                    <td><span class="status-badge status-${(a.statusiPageses || 'papaguar').toLowerCase()}">${a.statusiPageses || 'Papaguar'}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-warning btn-small" onclick="openFaturimModal(${a.id})" title="Menaxho faturimin">💰 Faturim</button>
+                    </td>
+                `;
+            });
+            
+            document.getElementById('totalFaturimi').textContent = totalNeto.toFixed(2);
+        }
+
+        // ==================== FORM SUBMISSIONS ====================
+        
+        // FORM 1: Regjistro të Dhënat
+        document.getElementById('regjistrimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('reg_submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Duke ruajtur...';
+            
+            const data = {
+                nrProtokollit: document.getElementById('reg_nrProtokollit').value.trim(),
+                nrProkurimit: document.getElementById('reg_nrProkurimit').value.trim(),
+                titulliAktivitetit: document.getElementById('reg_titulliAktivitetit').value.trim(),
+                autoriteti: document.getElementById('reg_autoriteti').value.trim(),
+                oeAnkues: document.getElementById('reg_oeAnkues').value.trim(),
+                dataAutorizimit: formatDateForBackend(document.getElementById('reg_dataAutorizimit').value),
+                llojiAngazhimit: document.getElementById('reg_llojiAngazhimit').value,
+                ekspertiShqyrtues: document.getElementById('reg_ekspertiShqyrtues').value.trim(),
+                shumaBruto: document.getElementById('reg_shumaBruto').value,
+                shumaNeto: document.getElementById('reg_shumaNeto').value,
+                // NOT required - will be filled later
+                dataDorezimet: null,
+                seanca: null,
+                rekomandimi: null,
+                vendimi: null,
+                raportFileUrl: null,
+                vendimFileUrl: null,
+                nrFatures: null,
+                statusiPageses: 'Papaguar'
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/ankesa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    showAlert('formAlert1', '✅ Ekspertiza u ruajt me sukses! Mund ta plotësoni më vonë në "Plotëso të Dhënat".', 'success');
+                    resetRegjistrimForm();
+                    await loadAnkesa();
+                } else {
+                    const error = await res.json();
+                    showAlert('formAlert1', '❌ Gabim: ' + (error.error || 'Gabim i panjohur'), 'error');
+                }
+            } catch (error) {
+                showAlert('formAlert1', '❌ Gabim në ruajtje: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Ruaj të Dhënat Bazë';
+            }
+        });
+
+        // FORM 2: Plotëso të Dhënat
+        document.getElementById('plotesoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentEditId) {
+                showAlert('formAlert2', '❌ Ju lutem zgjidhni një ekspertizë!', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('plt_submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Duke përditësuar...';
+            
+            const ankesa = ankeset.find(a => a.id === currentEditId);
+            
+            const data = {
+                // Keep existing basic data
+                nrProtokollit: ankesa.nrProtokollit,
+                nrProkurimit: ankesa.nrProkurimit,
+                titulliAktivitetit: ankesa.titulliAktivitetit,
+                autoriteti: ankesa.autoriteti,
+                oeAnkues: ankesa.oeAnkues,
+                dataAutorizimit: ankesa.dataAutorizimit,
+                llojiAngazhimit: ankesa.llojiAngazhimit,
+                ekspertiShqyrtues: ankesa.ekspertiShqyrtues,
+                shumaBruto: ankesa.shumaBruto,
+                shumaNeto: ankesa.shumaNeto,
+                // Update completion data
+                dataDorezimet: formatDateForBackend(document.getElementById('plt_dataDorezimet').value),
+                shqyrtimiDite: document.getElementById('plt_shqyrtimiDite').value || null,
+                seanca: document.getElementById('plt_seanca').value || null,
+                rekomandimi: document.getElementById('plt_rekomandimi').value.trim() || null,
+                vendimi: document.getElementById('plt_vendimi').value.trim() || null,
+                raportFileUrl: document.getElementById('plt_raportFileUrl').value.trim() || null,
+                vendimFileUrl: document.getElementById('plt_vendimFileUrl').value.trim() || null,
+                // Keep existing billing data if any
+                nrFatures: ankesa.nrFatures,
+                statusiPageses: ankesa.statusiPageses || 'Papaguar'
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/ankesa/${currentEditId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    showAlert('formAlert2', '✅ Ekspertiza u përditësua me sukses!', 'success');
+                    resetPlotesoForm();
+                    await loadAnkesa();
+                    switchTab('regjistri');
+                } else {
+                    const error = await res.json();
+                    showAlert('formAlert2', '❌ Gabim: ' + (error.error || 'Gabim i panjohur'), 'error');
+                }
+            } catch (error) {
+                showAlert('formAlert2', '❌ Gabim në përditësim: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✅ Përditëso Ekspertizën';
+            }
+        });
+
+        // FORM 3: Faturim
+        document.getElementById('faturimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentFaturimId) return;
+            
+            const ankesa = ankeset.find(a => a.id === currentFaturimId);
+            if (!ankesa) return;
+            
+            const data = {
+                // Keep all existing data
+                ...ankesa,
+                // Update billing fields
+                nrFatures: document.getElementById('modal_nrFatures').value.trim(),
+                statusiPageses: document.getElementById('modal_statusiPageses').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/ankesa/${currentFaturimId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    alert('✅ Faturimi u ruajt me sukses!');
+                    closeFaturimModal();
+                    await loadAnkesa();
+                    loadFaturimi();
+                } else {
+                    const error = await res.json();
+                    alert('❌ Gabim: ' + (error.error || 'Gabim i panjohur'));
+                }
+            } catch (error) {
+                alert('❌ Gabim në ruajtje: ' + error.message);
+            }
+        });
+
+        // ==================== FORM RESETS ====================
+        
+        function resetRegjistrimForm() {
+            document.getElementById('regjistrimForm').reset();
+            document.getElementById('formAlert1').innerHTML = '';
+            toggleEkspertiField();
+        }
+
+        function resetPlotesoForm() {
+            document.getElementById('plotesoForm').reset();
+            document.getElementById('formAlert2').innerHTML = '';
+            document.getElementById('plotesoFields').style.display = 'none';
+            currentEditId = null;
+        }
+
+        // ==================== MODALS ====================
+        
         function viewDetails(id) {
             const ankesa = ankeset.find(a => a.id === id);
             if (!ankesa) return;
@@ -355,122 +1117,117 @@
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
                 <div class="detail-row">
-                    <div class="detail-label">Nr. i Protokollit:</div>
+                    <div class="detail-label">Nr. i Protokollit</div>
                     <div class="detail-value">${ankesa.nrProtokollit}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Numri i Prokurimit:</div>
+                    <div class="detail-label">Numri i Prokurimit</div>
                     <div class="detail-value">${ankesa.nrProkurimit || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Titulli i Aktivitetit:</div>
+                    <div class="detail-label">Titulli i Aktivitetit</div>
                     <div class="detail-value">${ankesa.titulliAktivitetit}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Autoriteti Kontraktues:</div>
+                    <div class="detail-label">Autoriteti Kontraktues</div>
                     <div class="detail-value">${ankesa.autoriteti}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">OE Ankues:</div>
+                    <div class="detail-label">OE Ankues</div>
                     <div class="detail-value">${ankesa.oeAnkues}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Data e Autorizimit:</div>
+                    <div class="detail-label">Data e Autorizimit</div>
                     <div class="detail-value">${ankesa.dataAutorizimit || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Data e Dorëzimit:</div>
-                    <div class="detail-value">${ankesa.dataDorezimet}</div>
+                    <div class="detail-label">Data e Dorëzimit</div>
+                    <div class="detail-value">${ankesa.dataDorezimet || '<span style="color: orange;">⏳ Në pritje</span>'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Lloji i Angazhimit:</div>
+                    <div class="detail-label">Lloji i Angazhimit</div>
                     <div class="detail-value">${ankesa.llojiAngazhimit}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Eksperti Shqyrtues:</div>
+                    <div class="detail-label">Eksperti Shqyrtues</div>
                     <div class="detail-value">${ankesa.ekspertiShqyrtues || 'N/A'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Shqyrtimi në ditë:</div>
+                    <div class="detail-label">Shqyrtimi në ditë</div>
                     <div class="detail-value">${ankesa.shqyrtimiDite || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Rekomandimi:</div>
+                    <div class="detail-label">Rekomandimi</div>
                     <div class="detail-value">${ankesa.rekomandimi || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Vendimi:</div>
+                    <div class="detail-label">Vendimi</div>
                     <div class="detail-value">${ankesa.vendimi || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Seanca:</div>
+                    <div class="detail-label">Seanca</div>
                     <div class="detail-value">${ankesa.seanca || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Raport (Link):</div>
-                    <div class="detail-value">${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank">${ankesa.raportFileUrl}</a>` : '-'}</div>
+                    <div class="detail-label">Raport (Link)</div>
+                    <div class="detail-value">${ankesa.raportFileUrl ? `<a href="${ankesa.raportFileUrl}" target="_blank" style="color: #667eea;">${ankesa.raportFileUrl}</a>` : '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Vendimi (Link):</div>
-                    <div class="detail-value">${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank">${ankesa.vendimFileUrl}</a>` : '-'}</div>
+                    <div class="detail-label">Vendimi (Link)</div>
+                    <div class="detail-value">${ankesa.vendimFileUrl ? `<a href="${ankesa.vendimFileUrl}" target="_blank" style="color: #667eea;">${ankesa.vendimFileUrl}</a>` : '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Nr. i Faturës:</div>
+                    <div class="detail-label">Nr. i Faturës</div>
                     <div class="detail-value">${ankesa.nrFatures || '-'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Shuma Bruto:</div>
+                    <div class="detail-label">Shuma Bruto</div>
                     <div class="detail-value">${ankesa.shumaBruto || '-'} €</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Shuma Neto:</div>
+                    <div class="detail-label">Shuma Neto</div>
                     <div class="detail-value">${ankesa.shumaNeto || '-'} €</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Statusi i Pagesës:</div>
-                    <div class="detail-value"><span class="status-badge status-${ankesa.statusiPageses.toLowerCase()}">${ankesa.statusiPageses}</span></div>
+                    <div class="detail-label">Statusi i Pagesës</div>
+                    <div class="detail-value"><span class="status-badge status-${(ankesa.statusiPageses || 'papaguar').toLowerCase()}">${ankesa.statusiPageses || 'Papaguar'}</span></div>
                 </div>
             `;
             
             document.getElementById('detailModal').classList.add('active');
         }
 
-        function closeModal() {
+        function closeDetailModal() {
             document.getElementById('detailModal').classList.remove('active');
         }
 
-        function editAnkesa(id) {
+        function openFaturimModal(id) {
             const ankesa = ankeset.find(a => a.id === id);
             if (!ankesa) return;
 
-            editingId = id;
+            currentFaturimId = id;
             
-            document.getElementById('nrProtokollit').value = ankesa.nrProtokollit;
-            document.getElementById('nr_prokurimit').value = ankesa.nrProkurimit || '';
-            document.getElementById('titulliAktivitetit').value = ankesa.titulliAktivitetit;
-            document.getElementById('autoriteti').value = ankesa.autoriteti;
-            document.getElementById('oeAnkues').value = ankesa.oeAnkues;
-            document.getElementById('dataAutorizimit').value = parseDateToInput(ankesa.dataAutorizimit);
-            document.getElementById('dataDorezimet').value = parseDateToInput(ankesa.dataDorezimet);
-            document.getElementById('llojiAngazhimit').value = ankesa.llojiAngazhimit;
-            toggleEkspertiField();
-            document.getElementById('ekspertiShqyrtues').value = ankesa.ekspertiShqyrtues || '';
-            document.getElementById('shumaBruto').value = ankesa.shumaBruto || '';
-            document.getElementById('shumaNeto').value = ankesa.shumaNeto || '';
-            document.getElementById('statusiPageses').value = ankesa.statusiPageses;
-            document.getElementById('seanca').value = ankesa.seanca || '';
-            document.getElementById('rekomandimi').value = ankesa.rekomandimi || '';
-            document.getElementById('vendimi').value = ankesa.vendimi || '';
-            document.getElementById('raportFileUrl').value = ankesa.raportFileUrl || '';
-            document.getElementById('vendimFileUrl').value = ankesa.vendimFileUrl || '';
-            document.getElementById('nrFatures').value = ankesa.nrFatures || '';
-
-            showAlert('Editing mode: Ndrysho të dhënat dhe ruaji', 'success');
-            switchTab('regjistrim');
+            document.getElementById('faturimInfo').innerHTML = `
+                <strong>Nr. Protokolli:</strong> ${ankesa.nrProtokollit}<br>
+                <strong>Titulli:</strong> ${truncate(ankesa.titulliAktivitetit, 60)}<br>
+                <strong>Shuma Neto:</strong> ${ankesa.shumaNeto} €
+            `;
+            
+            document.getElementById('modal_nrFatures').value = ankesa.nrFatures || '';
+            document.getElementById('modal_statusiPageses').value = ankesa.statusiPageses || '';
+            
+            document.getElementById('faturimModal').classList.add('active');
         }
 
+        function closeFaturimModal() {
+            document.getElementById('faturimModal').classList.remove('active');
+            currentFaturimId = null;
+        }
+
+        // ==================== DELETE ====================
+        
         async function deleteAnkesa(id) {
-            if (!confirm('A jeni të sigurt që doni ta fshini këtë ekspertizë?')) return;
+            if (!confirm('A jeni të sigurt që doni ta fshini këtë ekspertizë?\n\nKjo veprim nuk mund të zhbëhet!')) return;
             
             try {
                 const res = await fetch(`${API_BASE}/api/ankesa/${id}`, {
@@ -481,6 +1238,7 @@
                 if (res.ok) {
                     alert('✅ Ekspertiza u fshi me sukses!');
                     await loadAnkesa();
+                    loadRegjistri();
                 } else {
                     alert('❌ Gabim në fshirje');
                 }
@@ -489,132 +1247,23 @@
             }
         }
 
-        function parseDateToInput(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('/');
-            if (parts.length !== 3) return '';
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-
-        function resetForm() {
-            document.getElementById('ankeseForm').reset();
-            editingId = null;
-            document.getElementById('formAlert').innerHTML = '';
-            toggleEkspertiField();
-        }
-
-        function showAlert(message, type) {
-            const alertDiv = document.getElementById('formAlert');
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => {
-                alertDiv.innerHTML = '';
-            }, 5000);
-        }
-
-        document.getElementById('ankeseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Duke ruajtur...';
-            
-            const data = {
-                nrProtokollit: document.getElementById('nrProtokollit').value,
-                nrProkurimit: document.getElementById('nr_prokurimit').value,
-                titulliAktivitetit: document.getElementById('titulliAktivitetit').value,
-                autoriteti: document.getElementById('autoriteti').value,
-                oeAnkues: document.getElementById('oeAnkues').value,
-                dataAutorizimit: formatDateForBackend(document.getElementById('dataAutorizimit').value),
-                dataDorezimet: formatDateForBackend(document.getElementById('dataDorezimet').value),
-                llojiAngazhimit: document.getElementById('llojiAngazhimit').value,
-                ekspertiShqyrtues: document.getElementById('ekspertiShqyrtues').value,
-                shumaBruto: document.getElementById('shumaBruto').value,
-                shumaNeto: document.getElementById('shumaNeto').value,
-                statusiPageses: document.getElementById('statusiPageses').value,
-                seanca: document.getElementById('seanca').value,
-                rekomandimi: document.getElementById('rekomandimi').value,
-                vendimi: document.getElementById('vendimi').value,
-                nrFatures: document.getElementById('nrFatures').value,
-                raportFileUrl: document.getElementById('raportFileUrl').value,
-                vendimFileUrl: document.getElementById('vendimFileUrl').value
-            };
-
-            try {
-                let res;
-                if (editingId) {
-                    res = await fetch(`${API_BASE}/api/ankesa/${editingId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    res = await fetch(`${API_BASE}/api/ankesa`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify(data)
-                    });
-                }
-
-                if (res.ok) {
-                    alert(editingId ? '✅ Ekspertiza u përditësua!' : '✅ Ekspertiza u ruajt saktë!');
-                    resetForm();
-                    await loadAnkesa();
-                    switchTab('lista');
-                } else {
-                    const error = await res.json();
-                    alert('❌ Gabim: ' + (error.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('❌ Gabim në ruajtje: ' + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = '💾 Ruaj Ekspertizën';
-            }
-        });
-
-        function formatDateForBackend(val) {
-            if (!val) return null;
-            const d = new Date(val);
-            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-        }
-
-       function switchTab(name, e) {
-    // Remove active from all tabs
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    // Add active to clicked button OR find by name
-    if (e && e.target) {
-        e.target.classList.add('active');
-    } else {
-        // Find the correct button when called programmatically
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach(btn => {
-            const text = btn.textContent.toLowerCase();
-            if ((name === 'regjistrim' && text.includes('regjistro')) || 
-                (name === 'lista' && text.includes('lista'))) {
-                btn.classList.add('active');
-            }
-        });
-    }
-    
-    // Show corresponding content
-    document.getElementById(name).classList.add('active');
-    
-    // Load data if switching to lista
-    if (name === 'lista') {
-        loadAnkesa();
-    }
-}
-
+        // ==================== EXPORTS ====================
+        
         function exportToExcel() { 
             window.location.href = `${API_BASE}/api/ankesa/export`; 
         }
 
-        window.onload = () => { 
-            checkAuth(); 
-            loadAnkesa(); 
+        function exportFaturimi() {
+            // You can implement separate export for billing
+            alert('Export faturimi - në zhvillim');
+        }
+
+        // ==================== INITIALIZATION ====================
+        
+        window.onload = async () => { 
+            await checkAuth();
+            await loadAnkesa();
+            loadRegjistri();
         };
     </script>
 </body>
