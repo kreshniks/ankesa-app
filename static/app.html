@@ -457,9 +457,9 @@
                         </div>
 
                         <div class="form-group">
-    <label>Titulli i Aktivitetit *</label>
-    <input type="text" id="reg_titulliAktivitetit" required>
-</div>
+                            <label>Titulli i Aktivitetit *</label>
+                            <input type="text" id="reg_titulliAktivitetit" required placeholder="Shërbime për...">
+                        </div>
 
                         <div class="form-group">
                             <label>Autoriteti Kontraktues *</label>
@@ -493,21 +493,8 @@
                                 <option value="150.00">150,00 €</option>
                                 <option value="120.00">120,00 €</option>
                             </select>
-                        </div>
-                      
-                        <div class="form-group">
-                            <label>Lënda e Përsëritur</label>
-                            <select id="reg_lendaPerseritur">
-                                <option value="">-- Zgjidhni --</option>
-                                <option value="Po">Po</option>
-                                <option value="Jo">Jo</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Bashkëngjit Autorizimin</label>
-                            <input type="file" id="reg_autorizimFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                            <small style="color: #6c757d; margin-top: 4px;">Formatet e lejuara: PDF, Word, Imazhe (opsionale)</small>
+                            <!-- HIDDEN FIELD - Shuma Neto (auto-calculated) -->
+                            <input type="hidden" id="reg_shumaNeto" value="">
                         </div>
                     </div>
                     
@@ -658,8 +645,6 @@
                             <th style="min-width: 90px;">Vendimi</th>
                             <th style="min-width: 90px;">Shuma Bruto</th>
                             <th style="min-width: 90px;">Shuma Neto</th>
-                            <th style="min-width: 90px;">Lënda Përsëritur</th>
-                            <th style="min-width: 100px;">Autorizimi</th>
                             <th style="min-width: 130px;">Veprime</th>
                         </tr>
                     </thead>
@@ -813,11 +798,12 @@
         }
 
         function autoCalculateNeto() {
-            const bruto = document.getElementById('reg_shumaBruto').value;
-        
-            if (bruto === '150.00') {
+            const brutoField = document.getElementById('reg_shumaBruto');
+            const netoField = document.getElementById('reg_shumaNeto');
+            
+            if (brutoField.value === '150.00') {
                 netoField.value = '128.25';
-            } else if (bruto === '120.00') {
+            } else if (brutoField.value === '120.00') {
                 netoField.value = '102.60';
             } else {
                 netoField.value = '';
@@ -984,7 +970,7 @@
             tbody.innerHTML = '';
             
             if (ankeset.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="21" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka të dhëna të regjistruara</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="19" style="text-align: center; padding: 40px; color: #6c757d;">Nuk ka të dhëna të regjistruara</td></tr>';
                 document.getElementById('totalRegjistri').textContent = '0';
                 return;
             }
@@ -1010,8 +996,6 @@
                     <td style="text-align: center;">${a.vendimFileUrl ? `<a href="${a.vendimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄</a>` : '-'}</td>
                     <td style="text-align: right;">${a.shumaBruto || '-'} €</td>
                     <td style="text-align: right;"><strong>${a.shumaNeto || '-'} €</strong></td>
-                    <td>${a.lendaPerseritur || '-'}</td>
-                    <td style="text-align: center;">${a.autorizimFileUrl ? `<a href="${a.autorizimFileUrl}" target="_blank" style="color: #667eea; font-weight: 600;">📄</a>` : '-'}</td>
                     <td class="actions">
                         <button class="btn btn-primary btn-small" onclick="viewDetails(${a.id})" title="Shiko detajet">👁️</button>
                         <button class="btn btn-danger btn-small" onclick="deleteAnkesa(${a.id})" title="Fshi">🗑️</button>
@@ -1068,10 +1052,6 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Duke ruajtur...';
             
-            // Upload autorizim file if exists
-            const autorizimFile = document.getElementById('reg_autorizimFile').files[0];
-            const autorizimUrl = autorizimFile ? await uploadFile(autorizimFile, 'autorizim') : null;
-            
             const data = {
                 nrProtokollit: document.getElementById('reg_nrProtokollit').value.trim(),
                 nrProkurimit: document.getElementById('reg_nrProkurimit').value.trim(),
@@ -1083,8 +1063,6 @@
                 ekspertiShqyrtues: document.getElementById('reg_ekspertiShqyrtues').value.trim(),
                 shumaBruto: document.getElementById('reg_shumaBruto').value,
                 shumaNeto: document.getElementById('reg_shumaNeto').value,
-                lendaPerseritur: document.getElementById('reg_lendaPerseritur').value || null,
-                autorizimFileUrl: autorizimUrl,
                 dataDorezimet: null,
                 seanca: null,
                 rekomandimi: null,
@@ -1152,8 +1130,6 @@
                 ekspertiShqyrtues: ankesa.ekspertiShqyrtues,
                 shumaBruto: ankesa.shumaBruto,
                 shumaNeto: ankesa.shumaNeto,
-                lendaPerseritur: ankesa.lendaPerseritur,
-                autorizimFileUrl: ankesa.autorizimFileUrl,
                 dataDorezimet: formatDateForBackend(document.getElementById('plt_dataDorezimet').value),
                 shqyrtimiDite: document.getElementById('plt_shqyrtimiDite').value || null,
                 seanca: document.getElementById('plt_seanca').value || null,
@@ -1318,14 +1294,6 @@
                 <div class="detail-row">
                     <div class="detail-label">Shuma Neto</div>
                     <div class="detail-value"><strong>${ankesa.shumaNeto || '-'} €</strong></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Lënda e Përsëritur</div>
-                    <div class="detail-value">${ankesa.lendaPerseritur || '-'}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Autorizimi</div>
-                    <div class="detail-value">${ankesa.autorizimFileUrl ? `<a href="${ankesa.autorizimFileUrl}" target="_blank" style="color: #667eea;">Shkarko 📄</a>` : '-'}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Nr. i Faturës</div>
