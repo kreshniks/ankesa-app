@@ -593,15 +593,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Bashkëngjit Raportin</label>
-                                <input type="file" id="plt_raportFile" accept=".pdf,.doc,.docx">
-                                <small style="color: #6c757d; margin-top: 4px;">PDF ose Word</small>
+                                <label>Raport (URL)</label>
+                                <input type="url" id="plt_raportUrl" placeholder="https://...">
+                                <small style="color: #6c757d; margin-top: 4px;">Vendos URL-në e raportit (Google Drive, Dropbox, etj.)</small>
                             </div>
                             
                             <div class="form-group">
-                                <label>Bashkëngjit Vendimin</label>
-                                <input type="file" id="plt_vendimFile" accept=".pdf,.doc,.docx">
-                                <small style="color: #6c757d; margin-top: 4px;">PDF ose Word</small>
+                                <label>Vendim (URL)</label>
+                                <input type="url" id="plt_vendimUrl" placeholder="https://...">
+                                <small style="color: #6c757d; margin-top: 4px;">Vendos URL-në e vendimit (Google Drive, Dropbox, etj.)</small>
                             </div>
                         </div>
                         
@@ -863,6 +863,18 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Raport (URL)</label>
+                        <input type="url" id="edit_raportUrl" placeholder="https://...">
+                        <small id="edit_raportUrlInfo" style="color: #6c757d; margin-top: 4px;"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Vendim (URL)</label>
+                        <input type="url" id="edit_vendimUrl" placeholder="https://...">
+                        <small id="edit_vendimUrlInfo" style="color: #6c757d; margin-top: 4px;"></small>
+                    </div>
+
+                    <div class="form-group">
                         <label>Nr. i Faturës</label>
                         <input type="text" id="edit_nrFatures">
                     </div>
@@ -1041,29 +1053,30 @@
             }
         }
 
-        async function uploadFile(file, type) {
-            if (!file) return null;
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('type', type);
-            
-            try {
-                const res = await fetch(`${API_BASE}/api/upload`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    body: formData
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    return data.url;
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-            }
-            return null;
-        }
+        // NOTE: File upload disabled - using URL inputs instead
+        // async function uploadFile(file, type) {
+        //     if (!file) return null;
+        //     
+        //     const formData = new FormData();
+        //     formData.append('file', file);
+        //     formData.append('type', type);
+        //     
+        //     try {
+        //         const res = await fetch(`${API_BASE}/api/upload`, {
+        //             method: 'POST',
+        //             credentials: 'include',
+        //             body: formData
+        //         });
+        //         
+        //         if (res.ok) {
+        //             const data = await res.json();
+        //             return data.url;
+        //         }
+        //     } catch (error) {
+        //         console.error('Upload error:', error);
+        //     }
+        //     return null;
+        // }
 
         // ==================== DATA LOADING ====================
         
@@ -1263,14 +1276,11 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Duke përditësuar...';
             
-            // Upload files if exist
-            const raportFile = document.getElementById('plt_raportFile').files[0];
-            const vendimFile = document.getElementById('plt_vendimFile').files[0];
-            
-            const raportUrl = raportFile ? await uploadFile(raportFile, 'raport') : null;
-            const vendimUrl = vendimFile ? await uploadFile(vendimFile, 'vendim') : null;
-            
             const ankesa = ankeset.find(a => a.id === currentEditId);
+            
+            // Get URL values or keep existing ones
+            const raportUrl = document.getElementById('plt_raportUrl').value.trim() || ankesa.raportFileUrl || null;
+            const vendimUrl = document.getElementById('plt_vendimUrl').value.trim() || ankesa.vendimFileUrl || null;
             
             const data = {
                 nrProtokollit: ankesa.nrProtokollit,
@@ -1288,8 +1298,8 @@
                 seanca: document.getElementById('plt_seanca').value || null,
                 rekomandimi: getSelectedCheckboxes('rek') || null,
                 vendimi: getSelectedCheckboxes('vend') || null,
-                raportFileUrl: raportUrl || ankesa.raportFileUrl,
-                vendimFileUrl: vendimUrl || ankesa.vendimFileUrl,
+                raportFileUrl: raportUrl,
+                vendimFileUrl: vendimUrl,
                 nrFatures: ankesa.nrFatures,
                 statusiPageses: ankesa.statusiPageses || 'Papaguar'
             };
@@ -1556,8 +1566,23 @@
             document.getElementById('edit_dataDorezimet').value = parseDateToInput(ankesa.dataDorezimet) || '';
             document.getElementById('edit_shqyrtimiDite').value = ankesa.shqyrtimiDite || '';
             document.getElementById('edit_seanca').value = ankesa.seanca || '';
+            document.getElementById('edit_raportUrl').value = ankesa.raportFileUrl || '';
+            document.getElementById('edit_vendimUrl').value = ankesa.vendimFileUrl || '';
             document.getElementById('edit_nrFatures').value = ankesa.nrFatures || '';
             document.getElementById('edit_statusiPageses').value = ankesa.statusiPageses || 'Papaguar';
+            
+            // Show info if URLs exist
+            if (ankesa.raportFileUrl) {
+                document.getElementById('edit_raportUrlInfo').innerHTML = '📄 <a href="' + ankesa.raportFileUrl + '" target="_blank" style="color: #667eea;">Shiko raportin aktual</a>';
+            } else {
+                document.getElementById('edit_raportUrlInfo').textContent = '';
+            }
+            
+            if (ankesa.vendimFileUrl) {
+                document.getElementById('edit_vendimUrlInfo').innerHTML = '📄 <a href="' + ankesa.vendimFileUrl + '" target="_blank" style="color: #667eea;">Shiko vendimin aktual</a>';
+            } else {
+                document.getElementById('edit_vendimUrlInfo').textContent = '';
+            }
             
             setCheckboxes('edit_rek', ankesa.rekomandimi);
             setCheckboxes('edit_vend', ankesa.vendimi);
@@ -1598,10 +1623,10 @@
                 rekomandimi: getSelectedCheckboxes('edit_rek') || null,
                 seanca: document.getElementById('edit_seanca').value || null,
                 vendimi: getSelectedCheckboxes('edit_vend') || null,
+                raportFileUrl: document.getElementById('edit_raportUrl').value.trim() || null,
+                vendimFileUrl: document.getElementById('edit_vendimUrl').value.trim() || null,
                 nrFatures: document.getElementById('edit_nrFatures').value.trim() || null,
-                statusiPageses: document.getElementById('edit_statusiPageses').value,
-                raportFileUrl: null,
-                vendimFileUrl: null
+                statusiPageses: document.getElementById('edit_statusiPageses').value
             };
 
             try {
